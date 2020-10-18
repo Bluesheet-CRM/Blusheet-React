@@ -1,0 +1,11 @@
+$primary-color: #ccc;
+@import '../../node_modules/loaders.css/src/animations/square-spin.scss';
+
+.loader-hidden {
+  display: none;
+}
+.loader-active {
+  display: block;
+  margin-left: 50vw;
+  margin-top: 40vh;
+}
