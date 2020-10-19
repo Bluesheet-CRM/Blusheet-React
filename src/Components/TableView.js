@@ -19,7 +19,7 @@ export default function TableView() {
          async function fetchData(){
             const result = await axios({
                 method:"get",
-                url:"http://localhost:8080/allAccounts"
+                url:"https://sf-node547.herokuapp.com/allAccounts"
             })
             if(result.data.statusCode === 200){
                 const id = [];
@@ -30,7 +30,7 @@ export default function TableView() {
 
                 const data = await axios({
                     method:"post",
-                    url:"http://localhost:8080/getMultipleRecords",
+                    url:"https://sf-node547.herokuapp.com/getMultipleRecords",
                     data:id
                 })
                 if(data.data.statusCode === 200){
