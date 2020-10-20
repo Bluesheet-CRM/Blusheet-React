@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import TableView from "./Components/TableView"
+import TableView from "./Components/TableView.js"
 
 function App() {
   return (
