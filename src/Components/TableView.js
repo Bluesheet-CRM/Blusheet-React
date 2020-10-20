@@ -100,7 +100,7 @@ export default function TableView() {
       })
       const result = await axios({
         method:"post",
-        url:"http://localhost:8080/addAccount",
+        url:"https://sf-node547.herokuapp.com/addAccount",
         data:payload
       })
       if (result.data.statusCode === 200) {
@@ -127,7 +127,7 @@ export default function TableView() {
     else{
     const result = await axios({
       method: "post",
-      url: "http://localhost:8080/updateMultiple",
+      url: "https://sf-node547.herokuapp.com/updateMultiple",
       data: editValue,
     });
     if (result.data.statusCode === 200) {
@@ -167,7 +167,7 @@ export default function TableView() {
   const handleDelete = async() =>{
       const result = await axios({
         method:"delete",
-        url:`http://localhost:8080/delete/${delId}`
+        url:`https://sf-node547.herokuapp.com/delete/${delId}`
       })
       if(result.data.statusCode === 200){
         window.alert("Deleted Successfully");
