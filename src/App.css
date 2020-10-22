@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+    
+}
+
+.App{
+    overflow-x: hidden;
+    overflow: hidden;
+}
+.App> .bg-image{
+    
+    height: 100vh;
+    background-image: url('./Assets/bg.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    filter: blur(2px);
+    background-position: center center;
+}
+.ck-editor__editable {
+    min-height: 500px !important;
+    padding-left: 2rem !important;
+}

@@ -5,6 +5,8 @@ import "ag-grid-community/dist/styles/ag-theme-alpine.css";
 import axios from "axios";
 import ReactDOM from "react-dom";
 import TextField from "@material-ui/core/TextField";
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import Grow from "@material-ui/core/Grow";
 import Paper from "@material-ui/core/Paper";
@@ -146,6 +148,9 @@ export default function TableView() {
           payload[item[0]] = item[1];
         }
       });
+      console.log(payload)
+      payload.CloseDate = new Date(payload.CloseDate);
+      console.log(payload)
       const result = await axios({
         method: "post",
         url: "https://sf-node547.herokuapp.com/addAccount",
@@ -154,15 +159,13 @@ export default function TableView() {
       if (result.data.statusCode === 200) {
         let resultArray = [];
         resultArray = result.data.payload.data;
-        resultArray.map((value, index) => {
-          if (value.success !== true) {
-            window.alert(value.errors[0].message);
+          if (resultArray.success !== true) {
+            window.alert(resultArray.errors[0].message);
             setEditValue([]);
             setSave(false);
             setLoad(false);
             fetchData();
           }
-        });
         setEditValue([]);
         setSave(false);
         setLoad(false);
@@ -238,6 +241,10 @@ export default function TableView() {
   }, [open]);
 
   const handleDelete = async () => {
+    if(delId === null){
+      setRowData(rowData.filter((el)=> el.Id !== null));
+    }
+    else{
     const result = await axios({
       method: "delete",
       url: `https://sf-node547.herokuapp.com/delete/${delId}`,
@@ -251,10 +258,11 @@ export default function TableView() {
     } else {
       window.alert("server Error");
     }
+  }
   };
 
   return (
-    <div style={{ width: "100%", height: "200px" }}>
+    <div style={{ width: "100%", height: "auto",position:"absolute",top:"5vh" }}>
       {load && (
         <div
           id="myGrid"
@@ -376,12 +384,12 @@ export default function TableView() {
               setDelId(e.data.Id);
             }}
           >
-            {/* <AgGridColumn field="Id" sortable={true} filter={true}></AgGridColumn>
-          <AgGridColumn field="Name" sortable={true} filter={true} ></AgGridColumn>
-          <AgGridColumn field="price" sortable={true} filter={true} ></AgGridColumn> */}
+            <AgGridColumn field="S.No" editable={false} width={30} checkboxSelection={true}></AgGridColumn>
+
             {Object.entries(fields1).map((item) => {
               if (item[1] === true) {
                 if (!item[0].includes("Id")) {
+                  if(!item[0].includes("Date")){
                   return (
                     <AgGridColumn
                       onCellValueChanged={(e) => handleChange(e)}
@@ -392,13 +400,24 @@ export default function TableView() {
                       checkboxSelection={false}
                     ></AgGridColumn>
                   );
+                  }
+                  else{
+                    return <AgGridColumn field={item[0]}
+                    onCellValueChanged={(e) => handleChange(e)}
+                    sortable={true}
+                    filter={true}
+                    hide={item[0]}
+                    checkboxSelection={false}  />
+                  }
                 } else {
+                  console.log(item[0])
                   if (item[0] === "Id") {
                     return (
                       <AgGridColumn
                         style={{ height: "200px" }}
                         editable={false}
                         field={item[0]}
+                        hide={true}
                         checkboxSelection={true}
                       ></AgGridColumn>
                     );
@@ -426,6 +445,7 @@ export default function TableView() {
         </div>
       )}
       {loading && loader}
+
     </div>
   );
 }
