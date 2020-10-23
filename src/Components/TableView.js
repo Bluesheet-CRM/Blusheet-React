@@ -81,19 +81,19 @@ export default function TableView() {
 
   useEffect(() => {
     setLoading(true);
-    fetchData();
-    // const response = JSON.parse(localStorage.getItem("response"));
-    // setRowData(response);
-    // setFilteredValue(response);
-    // setFields(response[0]);
-    // let gettingFields = Object.assign({}, response[0]);
-    // Object.entries(gettingFields).map((item) => {
-    //   gettingFields[item[0]] = true;
-    // });
-    // console.log(gettingFields);
-    // setFields1(gettingFields);
-    // setLoad(true);
-    // setLoading(false);
+    // fetchData();
+    const response = JSON.parse(localStorage.getItem("response"));
+    setRowData(response);
+    setFilteredValue(response);
+    setFields(response[0]);
+    let gettingFields = Object.assign({}, response[0]);
+    Object.entries(gettingFields).map((item) => {
+      gettingFields[item[0]] = true;
+    });
+    console.log(gettingFields);
+    setFields1(gettingFields);
+    setLoad(true);
+    setLoading(false);
   }, []);
 
   const [checked, setChecked] = React.useState(true);
@@ -252,9 +252,7 @@ export default function TableView() {
     if (result.data.statusCode === 200) {
       window.alert("Deleted Successfully");
       setDelId("");
-      setLoad(false);
-      setLoading(true);
-      fetchData();
+      setRowData(rowData.filter((el)=> el.Id !== delId));
     } else {
       window.alert("server Error");
     }

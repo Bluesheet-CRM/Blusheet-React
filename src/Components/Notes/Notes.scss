@@ -1,0 +1,24 @@
+.allNotes{
+    display: flex;
+    justify-content: space-between !important;
+    margin-top: 1rem;
+    cursor: pointer;
+    height: 3rem;
+
+    .note-icons{
+        display: none;
+    }
+}
+.allNotes:hover{
+    background: #ccc;
+    border: 1px solid #3f51b5;
+    box-shadow:  -1px 1px #3f51b5,
+         -2px 2px #3f51b5,
+         -3px 3px #3f51b5,
+         -4px 4px #3f51b5,
+         -5px 5px #3f51b5;
+
+    .note-icons{
+        display: block;
+    }
+}

@@ -1,29 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 function Homepage() {
-  const [time, setTime] = useState(0);
-  const [mins, setMins] = useState(0);
-
-  useEffect(() => {
-    let date = new Date();
-    let time = date.getHours();
-    let mins = date.getMinutes();
-    setMins(mins);
-    setTime(time);
-  },[]);
   return (
     <div
       style={{
         position: "absolute",
-        top: "35vh",
-        left: "40vw",
+        top: "30vh",
+        left: "22vw",
         textAlign: "center",
       }}
     >
-      <h1 style={{ fontSize: "4rem", fontWeight: "800" }}>
-        {time}: {mins} {time < 12 ? "AM" : "PM"}{" "}
-      </h1>
-      <h3 style={{ fontSize: "4rem" }}>Hello There!</h3>
+
+          <h1 style={{fontSize:"3rem"}}>Forget Your Admin Work</h1>
+          <br />
+          <p style={{fontSize:"2rem"}} >Update your salesforce lightning fast</p>
+          <br />
+          <p style={{fontSize:"2rem"}}  >Automate your sales notes taking process</p>
+          <br />
+          <p style={{fontSize:"2.5rem"}}>DESIGNED FOR ACCOUNT EXECUTIVES</p>
     </div>
   );
 }
