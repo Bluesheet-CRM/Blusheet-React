@@ -92,7 +92,7 @@ function Notes(props) {
     if (oppRef.current && oppRef.current.contains(event.target)) {
       return;
     }
-    setSelected(opportunity[index].Id)
+    setSelected(opportunity[index].Id);
     setOpen1(false);
   };
 
@@ -109,7 +109,7 @@ function Notes(props) {
     setLoading(true);
     const result = await axios({
       method: "get",
-      url: "http://localhost:8080/notes",
+      url: "https://sf-node547.herokuapp.com/notes",
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -120,7 +120,7 @@ function Notes(props) {
 
       const data = await axios({
         method: "post",
-        url: "http://localhost:8080/getMultipleNotes",
+        url: "https://sf-node547.herokuapp.com/getMultipleNotes",
         data: id,
       });
       if (data.data.statusCode === 200) {
@@ -130,6 +130,7 @@ function Notes(props) {
           "notes",
           JSON.stringify(data.data.payload.data, 2, null)
         );
+
         setLoading(false);
         setLoad(true);
       }
@@ -143,10 +144,11 @@ function Notes(props) {
 
   useEffect(() => {
     fetchData();
-    // const response = JSON.parse(localStorage.getItem("notes"));
-    // setNotesArray(response);
     const opportunities = JSON.parse(localStorage.getItem("response"));
     setOpportunity(opportunities);
+    // const response = JSON.parse(localStorage.getItem("notes"));
+    // setNotesArray(response);
+
     // setLoad(true);
   }, []);
 
@@ -161,13 +163,16 @@ function Notes(props) {
       };
       const result = await axios({
         method: "post",
-        url: "http://localhost:8080/addNotes",
+        url: "https://sf-node547.herokuapp.com/addNotes",
         data: payload,
       });
       if (result.data.statusCode === 200) {
         if (result.data.payload.data.success === true) {
           fetchData();
         }
+      }
+      else{
+        window.alert("server error")
       }
     }
   };
@@ -190,12 +195,10 @@ function Notes(props) {
     } else {
       const result = await axios({
         method: "delete",
-        url: `http://localhost:8080/deleteNotes/${id}`,
+        url: `https://sf-node547.herokuapp.com/deleteNotes/${id}`,
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");
-        setLoad(false);
-        setLoading(true);
         setNotesArray(notesArray.filter((el) => el.Id !== id));
       } else {
         window.alert("server Error");
@@ -336,9 +339,9 @@ function Notes(props) {
                     background: "#fff",
                     height: "2.5rem",
                     borderRadius: "5px",
+                    marginBottom:"1rem"
                   }}
                 />
-
                 <Button
                   style={{ marginBottom: "1rem", marginRight: "1rem" }}
                   aria-haspopup="true"

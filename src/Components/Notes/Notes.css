@@ -23,5 +23,6 @@
 
 .allNotes:hover .note-icons {
   display: block;
+  color: #3f51b5;
 }
 /*# sourceMappingURL=Notes.css.map */
