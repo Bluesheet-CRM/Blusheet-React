@@ -413,10 +413,9 @@ export default function TableView() {
                     return (
                       <AgGridColumn
                         style={{ height: "200px" }}
-                        editable={false}
+                        editable={true}
                         field={item[0]}
-                        hide={true}
-                        checkboxSelection={true}
+                      
                       ></AgGridColumn>
                     );
                   } else {
