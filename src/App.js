@@ -41,6 +41,7 @@ function App() {
   const classes = useStyles();
   const [text, setText] = useState("Hello world");
 
+
   return (
     <>
     <div className="App">
@@ -85,7 +86,7 @@ function App() {
         </Grid>
         <Grid item xs={6} sm={5}>
           <Grid container justify="flex-end">
-            <Grid item xs={6} sm={4} style={{ margin: "1rem" }}>
+            <Grid item xs={6} sm={5} style={{ margin: "1rem" }}>
               <Paper component="form" className={classes.root}>
                 <InputBase
                   className={classes.input}

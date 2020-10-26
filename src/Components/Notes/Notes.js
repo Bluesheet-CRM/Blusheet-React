@@ -189,9 +189,9 @@ function Notes(props) {
   };
 
   const handleDelete = async (id) => {
-    console.log(id)
-    if ((id === null) | (id === undefined)) {
-      setNotesArray(notesArray.filter((el) => el.Id !== null));
+    if (id === undefined) {
+      setNotesArray(notesArray.filter((el) => el.Id !== undefined));
+      
     } else {
       const result = await axios({
         method: "delete",
@@ -290,7 +290,9 @@ function Notes(props) {
                               onClick={() => setIndex(index)}
                             />{" "}
                             <DeleteRoundedIcon
-                              onClick={() => handleDelete(value.Id)}
+                              onClick={() => {
+                                handleDelete(value.Id)
+                              }}
                             />
                           </p>{" "}
                         </MenuItem>
@@ -325,11 +327,12 @@ function Notes(props) {
           </Grid>
           <Grid item sm={7} md={7}>
             <>
+            {console.log(index,notesArray)}
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
                 <TextField
                   label="Title"
                   id="outlined-size-small"
-                  value={notesArray[index].Title}
+                  value={notesArray[index] === undefined ? notesArray[0].Title : notesArray[index].Title}
                   variant="outlined"
                   size="small"
                   disabled
@@ -405,7 +408,7 @@ function Notes(props) {
 
               <CKEditor
                 editor={ClassicEditor}
-                data={`<p>${notesArray[index].Body}</p>`}
+                data={`<p>${notesArray[index] !== undefined ? notesArray[index].Body : notesArray[0].Body}</p>`}
                 onChange={(event, editor) => {
                   const data = editor.getData();
                   setNote(data);
