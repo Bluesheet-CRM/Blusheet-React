@@ -19,3 +19,9 @@
     min-height: 500px !important;
     padding-left: 2rem !important;
 }
+.show{
+    display: block;
+}
+.hide{
+    display: none;
+}

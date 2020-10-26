@@ -46,7 +46,6 @@ export default function TableView() {
       result.data.payload.data.records.map((value, index) => {
         id.push(value.Id);
       });
-      console.log(id);
 
       const data = await axios({
         method: "post",
@@ -54,7 +53,6 @@ export default function TableView() {
         data: id,
       });
       if (data.data.statusCode === 200) {
-        console.log(data.data.payload.data);
         setRowData(data.data.payload.data);
         localStorage.setItem(
           "response",
@@ -81,19 +79,19 @@ export default function TableView() {
 
   useEffect(() => {
     setLoading(true);
-    fetchData();
-    // const response = JSON.parse(localStorage.getItem("response"));
-    // setRowData(response);
-    // setFilteredValue(response);
-    // setFields(response[0]);
-    // let gettingFields = Object.assign({}, response[0]);
-    // Object.entries(gettingFields).map((item) => {
-    //   gettingFields[item[0]] = true;
-    // });
-    // console.log(gettingFields);
-    // setFields1(gettingFields);
-    // setLoad(true);
-    // setLoading(false);
+    // fetchData();
+    const response = JSON.parse(localStorage.getItem("response"));
+    setRowData(response);
+    setFilteredValue(response);
+    setFields(response[0]);
+    let gettingFields = Object.assign({}, response[0]);
+    Object.entries(gettingFields).map((item) => {
+      gettingFields[item[0]] = true;
+    });
+    console.log(gettingFields);
+    setFields1(gettingFields);
+    setLoad(true);
+    setLoading(false);
   }, []);
 
   const [checked, setChecked] = React.useState(true);
@@ -175,6 +173,7 @@ export default function TableView() {
         window.alert("server error");
       }
     } else {
+      console.log(editValue)
       const result = await axios({
         method: "post",
         url: "https://sf-node547.herokuapp.com/updateMultiple",
@@ -408,7 +407,6 @@ export default function TableView() {
                     checkboxSelection={false}  />
                   }
                 } else {
-                  console.log(item[0])
                   if (item[0] === "Id") {
                     return (
                       <AgGridColumn
