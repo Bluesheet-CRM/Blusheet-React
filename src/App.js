@@ -126,7 +126,7 @@ function App() {
     console.log(payload);
     const result = await axios({
       method: "post",
-      url: "http://localhost:8080/updateMultiple",
+      url: "https://sf-node547.herokuapp.com/updateMultiple",
       data: payload,
     });
     if (result.data.statusCode === 200) {
