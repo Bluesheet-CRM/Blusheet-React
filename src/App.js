@@ -237,7 +237,10 @@ function App() {
                     ref={anchorRef}
                     aria-controls={open ? "menu-list-grow" : undefined}
                     aria-haspopup="true"
-                    onClick={() => setOpen1(true)}
+                    onClick={() => {
+                      setShow(false);
+                      setOpen1(true)
+                    }}
                   />
                   <IconButton
                     type="submit"

@@ -60,6 +60,20 @@ function Notes(props) {
   const [desc, setDesc] = useState("");
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
+  const[assigned,setAssigned] = useState("");
+  const oppRef = React.useRef(null);
+
+  const handleToggle1 = () => {
+    setOpen1((prevOpen) => !prevOpen);
+  };
+
+  const handleClose1 = (event,index) => {
+    if (oppRef.current && oppRef.current.contains(event.target)) {
+      return;
+    }
+    setSelected(opportunity[index].Id);
+    setOpen1(false);
+  };
 
   async function fetchData() {
     setLoading(true);
@@ -113,8 +127,10 @@ function Notes(props) {
         Subject: sub,
         Description: desc,
         Status : status,
-        ActivityDate: new Date(date)
+        ActivityDate: new Date(date),
+        WhatId:selected
       };
+      
       const result = await axios({
         method: "post",
         url: "https://sf-node547.herokuapp.com/addTasks",
@@ -240,6 +256,55 @@ function Notes(props) {
                   Add &nbsp;
                   <NoteAddIcon style={{ height: "20px", width: "20px" }} />
                 </Button>
+
+                  <Button
+                    style={{ marginBottom: "1rem" }}
+                    aria-haspopup="true"
+                    variant="contained"
+                    color="secondary"
+                    ref={oppRef}
+                    aria-controls={open1 ? "menu-list-grow" : undefined}
+                    onClick={handleToggle1}
+                  >
+                    <LinkIcon style={{ height: "20px", width: "20px" }} />
+                    &nbsp; Link to Opportunity
+                  </Button>
+                <Popper
+                  open={open1}
+                  anchorEl={oppRef.current}
+                  role={undefined}
+                  transition
+                  disablePortal
+                  style={{zIndex:2,marginLeft:"3rem", maxHeight:"40vh", overflowY:"auto",maxwidth:"30vw", wordWrap: "break-word",}}
+                >
+                  {({ TransitionProps, placement }) => (
+                    <Grow
+                      {...TransitionProps}
+                      style={{
+                        transformOrigin:
+                          placement === "bottom"
+                            ? "center top"
+                            : "center bottom",
+                      }}
+                    >
+                      <Paper>
+                        <ClickAwayListener onClickAway={()=>setOpen1(false)}>
+                          <MenuList
+                            autoFocusItem={open1}
+                            id="menu-list-grow"
+                          >
+                            {opportunity.map((value,index)=>{
+                              return <MenuItem key={index} onClick={(e)=>handleClose1(e,index)}>
+                              {value.Name}
+                            </MenuItem>
+                            })}
+                            
+                          </MenuList>
+                        </ClickAwayListener>
+                      </Paper>
+                    </Grow>
+                  )}
+                </Popper>
               </div>
               <Card variant="outlined">
                 <CardContent>
