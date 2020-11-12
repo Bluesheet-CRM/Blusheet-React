@@ -210,10 +210,9 @@ function Notes(props) {
   return (
     <div
       style={{
-        width: "100vw",
+        width: "90%",
+        marginTop:"5vh",
         height: "auto",
-        position: "absolute",
-        top: "20vh",
       }}
     >
       {load && (

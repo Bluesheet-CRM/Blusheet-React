@@ -22,7 +22,8 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
+  Grid
 } from "@material-ui/core";
 import LocalOfferRoundedIcon from "@material-ui/icons/LocalOfferRounded";
 import BackupIcon from "@material-ui/icons/Backup";
@@ -425,21 +426,18 @@ export default function TableView() {
   return (
     <div
       style={{
-        width: "100%",
+        marginTop:"3rem",
         height: "auto",
-        position: "absolute",
-        top: "5vh",
+        width:"100%"
       }}
-    >
+    >   
       {load && (
         <div
           id="myGrid"
           style={{
-            height: "70vh",
-            minWidth: "70vw",
-            maxWidth: "80vw",
-            marginLeft: "12vw",
-            marginTop: "15vh",
+            height: "65vh",
+            width:"95%",
+            marginLeft:"2rem"
           }}
           className="ag-theme-alpine"
         >
@@ -660,7 +658,7 @@ export default function TableView() {
       {loading && loader}
       <br />
       <br />
-
+{/* 
       <Chart
         options={chart.options}
         series={chart.series}
@@ -681,7 +679,7 @@ export default function TableView() {
         type="bar"
         width={500}
         height={320}
-      />
+      /> */}
     </div>
   );
 }

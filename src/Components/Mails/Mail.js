@@ -150,10 +150,8 @@ function Mail() {
   return (
     <div
       style={{
-        width: "100vw",
-        height: "auto",
-        position: "absolute",
-        top: "20vh",
+        width: "90%",
+        marginTop:"5vh"
       }}
     >
       <Grid container justify="space-evenly">

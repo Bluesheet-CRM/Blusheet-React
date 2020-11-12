@@ -14,14 +14,19 @@ import {
   ClickAwayListener,
   Grow,
   Paper,
-  Popper
-
+  Popper,
+  Container,
+  InputAdornment,
+  Box,
+  SvgIcon,
 } from "@material-ui/core";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
 import "../Notes/Notes.css";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
-
+import Statistics from "./Statistics";
+import TaskTable from "./TaskTable";
+import { Search as SearchIcon } from "react-feather";
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
     position: "relative",
@@ -92,7 +97,7 @@ function Notes(props) {
         console.log(data.data.payload.data);
         setNotesArray(data.data.payload.data);
         localStorage.setItem(
-          "notes",
+          "tasks",
           JSON.stringify(data.data.payload.data, 2, null)
         );
 
@@ -164,78 +169,66 @@ function Notes(props) {
   return (
     <div
       style={{
-        width: "100vw",
-        height: "auto",
-        position: "absolute",
-        top: "20vh",
+        width: "85vw",
+        marginTop: "5vh",
+        overflowX: "auto",
       }}
     >
-      {load && (
-        <Grid container justify="space-evenly">
-          <Grid item sm={3} md={3}>
-            <Card
-              style={{ height: "60vh", marginTop: "3rem" }}
-              variant="outlined"
-            >
-              <CardContent style={{ padding: "1rem" }}>
-                <h3>All your Tasks</h3>
-                <br />
-                <hr />
-                <MenuList>
-                  {load &&
-                    notesArray.map((value, index) => {
-                      if (value.TaskSubtype === "Task") {
-                        return (
-                          <MenuItem
-                            key={index}
-                            className="allNotes"
-                            onClick={() => setIndex(index)}
-                          >
-                            {" "}
-                            <p>&nbsp;{value.Subject}</p>
-                            <p className="note-icons">
-                              <LaunchRoundedIcon
-                                onClick={() => setIndex(index)}
-                              />{" "}
-                              <DeleteRoundedIcon
-                                onClick={() => {
-                                  handleDelete(value.Id);
-                                }}
-                              />
-                            </p>{" "}
-                          </MenuItem>
-                        );
-                      } else {
-                        return null;
-                      }
-                    })}
-                </MenuList>
-                {loading && (
-                  <div className={classes.root}>
-                    <CircularProgress
-                      variant="determinate"
-                      className={classes.bottom}
-                      size={40}
-                      thickness={4}
-                      {...props}
-                      value={100}
-                    />
-                    <CircularProgress
-                      variant="indeterminate"
-                      disableShrink
-                      className={classes.top}
-                      classes={{
-                        circle: classes.circle,
-                      }}
-                      size={40}
-                      thickness={4}
-                      {...props}
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+      <Container maxWidth={false}>
+        <Grid container>
+          <Grid item xl={3} md={3}>
+            <Statistics />
           </Grid>
+          <Grid item xl={3} md={3}>
+            <Statistics />
+          </Grid>
+          <Grid item xl={3} md={3}>
+            <Statistics />
+          </Grid>
+          <Grid item xl={3} md={3}>
+            <Statistics />
+          </Grid>
+        </Grid>
+        <Box
+        display="flex"
+        style={{marginTop:"2rem",width:"90%"}}
+        justifyContent="flex-end"
+      >
+        <Button
+          color="primary"
+          variant="contained"
+        >
+          Add Task
+        </Button>
+      </Box>
+      <Box mt={3}>
+        <Card>
+          <CardContent>
+            <Box maxWidth={500}>
+              <TextField
+                fullWidth
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SvgIcon
+                        fontSize="small"
+                        color="action"
+                      >
+                        <SearchIcon />
+                      </SvgIcon>
+                    </InputAdornment>
+                  )
+                }}
+                placeholder="Search Task"
+                variant="outlined"
+              />
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+        {load && <TaskTable data={notesArray} />}
+        {/* {load && (
+        <Grid container justify="space-evenly">
           <Grid item sm={5} md={5}>
             <>
               {console.log(index, notesArray)}
@@ -367,8 +360,9 @@ function Notes(props) {
               </Card>
             </>
           </Grid>
-        </Grid>
-      )}
+        </Grid> */}
+        {/* )} */}
+      </Container>
     </div>
   );
 }
