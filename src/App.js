@@ -1,30 +1,22 @@
 import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Route } from "react-router-dom";
+
+import axios from "axios";
+
+//css
 import "./App.css";
 
+//components
 import TableView from "./Components/TableView.js";
-import Grid from "@material-ui/core/Grid";
 import Homepage from "./Components/Homepage/Homepage";
-import { BrowserRouter as Router, Route } from "react-router-dom";
-import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
-import Button from "@material-ui/core/Button";
-import InputBase from "@material-ui/core/InputBase";
-import Divider from "@material-ui/core/Divider";
-import IconButton from "@material-ui/core/IconButton";
-import MenuIcon from "@material-ui/icons/Menu";
-import SearchIcon from "@material-ui/icons/Search";
-import DirectionsIcon from "@material-ui/icons/Directions";
-import { Link } from "react-router-dom";
 import Notes from "./Components/Notes/Notes";
-import ClickAwayListener from "@material-ui/core/ClickAwayListener";
-import Grow from "@material-ui/core/Grow";
-import Modal from "@material-ui/core/Modal";
-import TextField from "@material-ui/core/TextField";
-import Popper from "@material-ui/core/Popper";
-import MenuItem from "@material-ui/core/MenuItem";
-import MenuList from "@material-ui/core/MenuList";
-import axios from "axios";
 import Tasks from "./Components/Tasks/Tasks";
+import Products from "./Components/Products/Products";
+import Mail from "./Components/Mails/Mail";
+
+//material UI
+import { makeStyles,Grid,Paper,Button,InputBase,IconButton,Modal,TextField,MenuItem,MenuList } from "@material-ui/core";
+import SearchIcon from "@material-ui/icons/Search";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -72,18 +64,6 @@ function App() {
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef(null);
 
-  const handleToggle = () => {
-    setOpen((prevOpen) => !prevOpen);
-  };
-
-  const handleClose = (event, index) => {
-    if (anchorRef.current && anchorRef.current.contains(event.target)) {
-      return;
-    }
-
-    setOpen(false);
-    setOpen1(true);
-  };
 
   // return focus to the button when we transitioned from !open -> open
   const prevOpen = React.useRef(open);
@@ -135,7 +115,9 @@ function App() {
       resultArray.map((value, index) => {
         if (value.success !== true) {
           window.alert(value.errors[0].message);
+          return null;
         }
+        return null;
       });
       setShow(false);
       setOpen1(false);
@@ -239,7 +221,7 @@ function App() {
                     aria-haspopup="true"
                     onClick={() => {
                       setShow(false);
-                      setOpen1(true)
+                      setOpen1(true);
                     }}
                   />
                   <IconButton
@@ -268,6 +250,8 @@ function App() {
           <Route path="/pipelines" component={TableView} />
           <Route path="/notes" component={Notes} />
           <Route path="/tasks" component={Tasks} />
+          <Route path="/products" component={Products} />
+          <Route path="/mail" component={Mail} />
         </Router>
       </div>
       <Modal

@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from "react";
-import CKEditor from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import Button from "@material-ui/core/Button";
 import LinkIcon from "@material-ui/icons/Link";
-import Grid from "@material-ui/core/Grid";
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
 import axios from "axios";
-import BookTwoToneIcon from "@material-ui/icons/BookTwoTone";
-import { makeStyles, withStyles } from "@material-ui/core/styles";
-import CircularProgress from "@material-ui/core/CircularProgress";
+import {
+  makeStyles,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  CircularProgress,
+  TextField,
+  MenuItem,
+  MenuList,
+  ClickAwayListener,
+  Grow,
+  Paper,
+  Popper
+
+} from "@material-ui/core";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
-import TextField from "@material-ui/core/TextField";
 import "../Notes/Notes.css";
-import MenuItem from "@material-ui/core/MenuItem";
-import MenuList from "@material-ui/core/MenuList";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
-import ClickAwayListener from "@material-ui/core/ClickAwayListener";
-import Grow from "@material-ui/core/Grow";
-import Paper from "@material-ui/core/Paper";
-import Popper from "@material-ui/core/Popper";
 
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
@@ -45,14 +44,10 @@ const useStylesFacebook = makeStyles((theme) => ({
 
 function Notes(props) {
   const classes = useStylesFacebook();
-  const [note, setNote] = useState("");
   const [notesArray, setNotesArray] = useState([]);
   const [loading, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [index, setIndex] = useState(0);
-  const [add, setAdd] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
   const [opportunity, setOpportunity] = useState([]);
   const [selected, setSelected] = useState("");
   const [open1, setOpen1] = React.useState(false);
@@ -60,14 +55,13 @@ function Notes(props) {
   const [desc, setDesc] = useState("");
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
-  const[assigned,setAssigned] = useState("");
   const oppRef = React.useRef(null);
 
   const handleToggle1 = () => {
     setOpen1((prevOpen) => !prevOpen);
   };
 
-  const handleClose1 = (event,index) => {
+  const handleClose1 = (event, index) => {
     if (oppRef.current && oppRef.current.contains(event.target)) {
       return;
     }
@@ -85,6 +79,7 @@ function Notes(props) {
       const id = [];
       result.data.payload.data.records.map((value, index) => {
         id.push(value.Id);
+        return null;
       });
       console.log(id);
 
@@ -123,31 +118,30 @@ function Notes(props) {
   }, []);
 
   const handleSave = async () => {
-      const payload = {
-        Subject: sub,
-        Description: desc,
-        Status : status,
-        ActivityDate: new Date(date),
-        WhatId:selected
-      };
-      
-      const result = await axios({
-        method: "post",
-        url: "https://sf-node547.herokuapp.com/addTasks",
-        data: payload,
-      });
-      if (result.data.statusCode === 200) {
-        if (result.data.payload.data.success === true) {
-          setSub("");
-          setDesc("");
-          setDate("");
-          setStatus("");
-          fetchData();
-        }
-      } else {
-        window.alert("server error");
+    const payload = {
+      Subject: sub,
+      Description: desc,
+      Status: status,
+      ActivityDate: new Date(date),
+      WhatId: selected,
+    };
+
+    const result = await axios({
+      method: "post",
+      url: "https://sf-node547.herokuapp.com/addTasks",
+      data: payload,
+    });
+    if (result.data.statusCode === 200) {
+      if (result.data.payload.data.success === true) {
+        setSub("");
+        setDesc("");
+        setDate("");
+        setStatus("");
+        fetchData();
       }
-    
+    } else {
+      window.alert("server error");
+    }
   };
 
   const handleDelete = async (id) => {
@@ -190,26 +184,30 @@ function Notes(props) {
                 <MenuList>
                   {load &&
                     notesArray.map((value, index) => {
-                      return (
-                        <MenuItem
-                          key={index}
-                          className="allNotes"
-                          onClick={() => setIndex(index)}
-                        >
-                          {" "}
-                          <p>&nbsp;{value.Subject}</p>
-                          <p className="note-icons">
-                            <LaunchRoundedIcon
-                              onClick={() => setIndex(index)}
-                            />{" "}
-                            <DeleteRoundedIcon
-                              onClick={() => {
-                                handleDelete(value.Id);
-                              }}
-                            />
-                          </p>{" "}
-                        </MenuItem>
-                      );
+                      if (value.TaskSubtype === "Task") {
+                        return (
+                          <MenuItem
+                            key={index}
+                            className="allNotes"
+                            onClick={() => setIndex(index)}
+                          >
+                            {" "}
+                            <p>&nbsp;{value.Subject}</p>
+                            <p className="note-icons">
+                              <LaunchRoundedIcon
+                                onClick={() => setIndex(index)}
+                              />{" "}
+                              <DeleteRoundedIcon
+                                onClick={() => {
+                                  handleDelete(value.Id);
+                                }}
+                              />
+                            </p>{" "}
+                          </MenuItem>
+                        );
+                      } else {
+                        return null;
+                      }
                     })}
                 </MenuList>
                 {loading && (
@@ -257,25 +255,32 @@ function Notes(props) {
                   <NoteAddIcon style={{ height: "20px", width: "20px" }} />
                 </Button>
 
-                  <Button
-                    style={{ marginBottom: "1rem" }}
-                    aria-haspopup="true"
-                    variant="contained"
-                    color="secondary"
-                    ref={oppRef}
-                    aria-controls={open1 ? "menu-list-grow" : undefined}
-                    onClick={handleToggle1}
-                  >
-                    <LinkIcon style={{ height: "20px", width: "20px" }} />
-                    &nbsp; Link to Opportunity
-                  </Button>
+                <Button
+                  style={{ marginBottom: "1rem" }}
+                  aria-haspopup="true"
+                  variant="contained"
+                  color="secondary"
+                  ref={oppRef}
+                  aria-controls={open1 ? "menu-list-grow" : undefined}
+                  onClick={handleToggle1}
+                >
+                  <LinkIcon style={{ height: "20px", width: "20px" }} />
+                  &nbsp; Link to Opportunity
+                </Button>
                 <Popper
                   open={open1}
                   anchorEl={oppRef.current}
                   role={undefined}
                   transition
                   disablePortal
-                  style={{zIndex:2,marginLeft:"3rem", maxHeight:"40vh", overflowY:"auto",maxwidth:"30vw", wordWrap: "break-word",}}
+                  style={{
+                    zIndex: 2,
+                    marginLeft: "3rem",
+                    maxHeight: "40vh",
+                    overflowY: "auto",
+                    maxwidth: "30vw",
+                    wordWrap: "break-word",
+                  }}
                 >
                   {({ TransitionProps, placement }) => (
                     <Grow
@@ -288,17 +293,18 @@ function Notes(props) {
                       }}
                     >
                       <Paper>
-                        <ClickAwayListener onClickAway={()=>setOpen1(false)}>
-                          <MenuList
-                            autoFocusItem={open1}
-                            id="menu-list-grow"
-                          >
-                            {opportunity.map((value,index)=>{
-                              return <MenuItem key={index} onClick={(e)=>handleClose1(e,index)}>
-                              {value.Name}
-                            </MenuItem>
+                        <ClickAwayListener onClickAway={() => setOpen1(false)}>
+                          <MenuList autoFocusItem={open1} id="menu-list-grow">
+                            {opportunity.map((value, index) => {
+                              return (
+                                <MenuItem
+                                  key={index}
+                                  onClick={(e) => handleClose1(e, index)}
+                                >
+                                  {value.Name}
+                                </MenuItem>
+                              );
                             })}
-                            
                           </MenuList>
                         </ClickAwayListener>
                       </Paper>
@@ -314,7 +320,7 @@ function Notes(props) {
                     variant="outlined"
                     fullWidth
                     value={sub}
-                    onChange={(e)=>setSub(e.target.value)}
+                    onChange={(e) => setSub(e.target.value)}
                   />
                   <br />
                   <br />
@@ -324,7 +330,7 @@ function Notes(props) {
                     variant="outlined"
                     fullWidth
                     value={desc}
-                    onChange={(e)=>setDesc(e.target.value)}
+                    onChange={(e) => setDesc(e.target.value)}
                   />
                   <br />
                   <br />
@@ -334,7 +340,7 @@ function Notes(props) {
                     variant="outlined"
                     fullWidth
                     value={status}
-                    onChange={(e)=>setStatus(e.target.value)}
+                    onChange={(e) => setStatus(e.target.value)}
                   />
                   <br />
                   <br />
@@ -344,7 +350,7 @@ function Notes(props) {
                     variant="outlined"
                     fullWidth
                     value={date}
-                    onChange={(e)=>setDate(e.target.value)}
+                    onChange={(e) => setDate(e.target.value)}
                   />
                   <br />
                   <br />

@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from "react";
 import CKEditor from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import Button from "@material-ui/core/Button";
+import {
+  Button,
+  Grid,
+  Card,
+
+  CardContent,
+  makeStyles,
+
+  CircularProgress,
+  TextField,
+  MenuItem,
+  MenuList,
+  Grow,
+  Paper,
+  Popper
+} from "@material-ui/core";
 import LinkIcon from "@material-ui/icons/Link";
-import Grid from "@material-ui/core/Grid";
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
 import axios from "axios";
-import BookTwoToneIcon from "@material-ui/icons/BookTwoTone";
-import { makeStyles, withStyles } from "@material-ui/core/styles";
-import CircularProgress from "@material-ui/core/CircularProgress";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
-import TextField from "@material-ui/core/TextField";
 import "./Notes.css";
-import MenuItem from "@material-ui/core/MenuItem";
-import MenuList from "@material-ui/core/MenuList";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
-import Grow from "@material-ui/core/Grow";
-import Paper from "@material-ui/core/Paper";
-import Popper from "@material-ui/core/Popper";
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
     position: "relative",
@@ -88,7 +90,7 @@ function Notes(props) {
     setOpen1((prevOpen) => !prevOpen);
   };
 
-  const handleClose1 = (event,index) => {
+  const handleClose1 = (event, index) => {
     if (oppRef.current && oppRef.current.contains(event.target)) {
       return;
     }
@@ -115,6 +117,7 @@ function Notes(props) {
       const id = [];
       result.data.payload.data.records.map((value, index) => {
         id.push(value.Id);
+        return null;
       });
       console.log(id);
 
@@ -170,9 +173,8 @@ function Notes(props) {
         if (result.data.payload.data.success === true) {
           fetchData();
         }
-      }
-      else{
-        window.alert("server error")
+      } else {
+        window.alert("server error");
       }
     }
   };
@@ -191,7 +193,6 @@ function Notes(props) {
   const handleDelete = async (id) => {
     if (id === undefined) {
       setNotesArray(notesArray.filter((el) => el.Id !== undefined));
-      
     } else {
       const result = await axios({
         method: "delete",
@@ -291,7 +292,7 @@ function Notes(props) {
                             />{" "}
                             <DeleteRoundedIcon
                               onClick={() => {
-                                handleDelete(value.Id)
+                                handleDelete(value.Id);
                               }}
                             />
                           </p>{" "}
@@ -327,12 +328,16 @@ function Notes(props) {
           </Grid>
           <Grid item sm={7} md={7}>
             <>
-            {console.log(index,notesArray)}
+              {console.log(index, notesArray)}
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
                 <TextField
                   label="Title"
                   id="outlined-size-small"
-                  value={notesArray[index] === undefined ? notesArray[0].Title : notesArray[index].Title}
+                  value={
+                    notesArray[index] === undefined
+                      ? notesArray[0].Title
+                      : notesArray[index].Title
+                  }
                   variant="outlined"
                   size="small"
                   disabled
@@ -342,7 +347,7 @@ function Notes(props) {
                     background: "#fff",
                     height: "2.5rem",
                     borderRadius: "5px",
-                    marginBottom:"1rem"
+                    marginBottom: "1rem",
                   }}
                 />
                 <Button
@@ -374,7 +379,14 @@ function Notes(props) {
                   role={undefined}
                   transition
                   disablePortal
-                  style={{zIndex:2,marginLeft:"3rem", maxHeight:"40vh", overflowY:"auto",maxwidth:"30vw", wordWrap: "break-word",}}
+                  style={{
+                    zIndex: 2,
+                    marginLeft: "3rem",
+                    maxHeight: "40vh",
+                    overflowY: "auto",
+                    maxwidth: "30vw",
+                    wordWrap: "break-word",
+                  }}
                 >
                   {({ TransitionProps, placement }) => (
                     <Grow
@@ -387,17 +399,18 @@ function Notes(props) {
                       }}
                     >
                       <Paper>
-                        <ClickAwayListener onClickAway={()=>setOpen1(false)}>
-                          <MenuList
-                            autoFocusItem={open1}
-                            id="menu-list-grow"
-                          >
-                            {opportunity.map((value,index)=>{
-                              return <MenuItem key={index} onClick={(e)=>handleClose1(e,index)}>
-                              {value.Name}
-                            </MenuItem>
+                        <ClickAwayListener onClickAway={() => setOpen1(false)}>
+                          <MenuList autoFocusItem={open1} id="menu-list-grow">
+                            {opportunity.map((value, index) => {
+                              return (
+                                <MenuItem
+                                  key={index}
+                                  onClick={(e) => handleClose1(e, index)}
+                                >
+                                  {value.Name}
+                                </MenuItem>
+                              );
                             })}
-                            
                           </MenuList>
                         </ClickAwayListener>
                       </Paper>
@@ -408,7 +421,11 @@ function Notes(props) {
 
               <CKEditor
                 editor={ClassicEditor}
-                data={`<p>${notesArray[index] !== undefined ? notesArray[index].Body : notesArray[0].Body}</p>`}
+                data={`<p>${
+                  notesArray[index] !== undefined
+                    ? notesArray[index].Body
+                    : notesArray[0].Body
+                }</p>`}
                 onChange={(event, editor) => {
                   const data = editor.getData();
                   setNote(data);
