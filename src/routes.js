@@ -8,13 +8,15 @@ import Notes from "./Components/Notes/Notes";
 import Tasks from "./Components/Tasks/Tasks";
 import Products from "./Components/Products/Products";
 import Mail from "./Components/Mails/Mail";
+import Login from "./Components/Auth/Login";
+import Signup from "./Components/Auth/Signup";
+import Home from "./Components/Home/Home";
 import NotFoundView from "./Components/errors/NotFoundView";
 const routes = [
   {
     path: '/app',
     element: <DashboardLayout />,
     children: [
-      { path: '/', element: <Homepage /> },
       { path: '/pipelines', element: <Pipeline /> },
       { path: '/notes', element: <Notes /> },
       { path: '/tasks', element: <Tasks /> },
@@ -28,7 +30,10 @@ const routes = [
     path:"/",
     element: <MainLayout />,
     children:[
-      { path: '/', element: <Homepage /> },
+      { path: '/', element: <Home /> },
+      { path: '/home', element: <Homepage /> },
+      {path : '/login',element: <Login/> },
+      {path : '/signup',element: <Signup /> },
       { path: '404', element: <NotFoundView /> },
     ]
   }

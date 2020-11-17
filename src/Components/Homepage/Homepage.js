@@ -1,9 +1,9 @@
-import React,{useState,useEffect} from "react";
+import React,{useState,useEffect,useContext} from "react";
 import { makeStyles,Grid,Paper,Button,InputBase,IconButton,Modal,TextField,MenuItem,MenuList } from "@material-ui/core";
 import axios from "axios";
 import SearchIcon from "@material-ui/icons/Search";
 
-
+import {AuthContext} from "../../contexts/AuthContext"
 const useStyles = makeStyles((theme) => ({
   root: {
     padding: "2px 4px",
@@ -40,10 +40,26 @@ function Homepage() {
   const [id, setId] = useState("");
   const [sendData, setSendData] = useState([]);
 
+  const {currentUser, loading} = useContext(AuthContext);
+
   useEffect(() => {
     const opportunities = JSON.parse(localStorage.getItem("response"));
     setOpportunity(opportunities);
     setFilterArray(opportunities);
+
+    // axios({
+    //   method:"post",
+    //   url:"http://localhost:8080/pipelines",
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //     "Content-type": "application/json",
+    // },
+    // data: JSON.stringify({
+        
+    // })
+  
+    
+    
   }, []);
 
   const [open, setOpen] = React.useState(false);
