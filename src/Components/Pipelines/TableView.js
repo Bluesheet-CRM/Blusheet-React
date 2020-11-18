@@ -198,7 +198,7 @@ export default function TableView() {
   async function fetchData() {
     const result = await axios({
       method: "get",
-      url: "https://sf-node547.herokuapp.com/allAccounts",
+      url: `${process.env.REACT_APP_BACKEND_URL}/allAccounts`,
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -209,7 +209,7 @@ export default function TableView() {
 
       const data = await axios({
         method: "post",
-        url: "https://sf-node547.herokuapp.com/getMultipleRecords",
+        url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleRecords`,
         data: id,
       });
       if (data.data.statusCode === 200) {
@@ -315,7 +315,7 @@ export default function TableView() {
       console.log(payload);
       const result = await axios({
         method: "post",
-        url: "https://sf-node547.herokuapp.com/addAccount",
+        url: `${process.env.REACT_APP_BACKEND_URL}/addAccount`,
         data: payload,
       });
       if (result.data.statusCode === 200) {
@@ -340,7 +340,7 @@ export default function TableView() {
       console.log(editValue);
       const result = await axios({
         method: "post",
-        url: "https://sf-node547.herokuapp.com/updateMultiple",
+        url: `${process.env.REACT_APP_BACKEND_URL}/updateMultiple`,
         data: editValue,
       });
       if (result.data.statusCode === 200) {
@@ -411,7 +411,7 @@ export default function TableView() {
     } else {
       const result = await axios({
         method: "delete",
-        url: `https://sf-node547.herokuapp.com/delete/${delId}`,
+        url: `${process.env.REACT_APP_BACKEND_URL}/delete/${delId}`,
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");

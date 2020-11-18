@@ -39,7 +39,7 @@ const App = () => {
   async function fetchData() {
     const result = await axios({
       method: "get",
-      url: "http://localhost:8080/products",
+      url: `${process.env.REACT_APP_BACKEND_URL}/products`,
     });
     if (result.data.statusCode === 200) {
       console.log(result.data.payload);
@@ -51,7 +51,7 @@ const App = () => {
 
       const data = await axios({
         method: "post",
-        url: "http://localhost:8080/getMultipleProducts",
+        url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleProducts`,
         data: id,
       });
       if (data.data.statusCode === 200) {
@@ -157,7 +157,7 @@ const App = () => {
     window.alert("sdsd");
     const result = await axios({
       method: "post",
-      url: "http://localhost:8080/addProducts",
+      url: `${process.env.REACT_APP_BACKEND_URL}/addProducts`,
       data: newArray,
     });
     if (result.data.statusCode === 200) {

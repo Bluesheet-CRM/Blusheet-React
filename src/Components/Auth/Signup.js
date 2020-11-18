@@ -14,6 +14,7 @@ function Signup() {
     const [isLoading,setIsLoading] = useState(false);
     
     const handleEmailSignUp = () => {
+        
 		setError("");
 		setIsLoading(true);
 		app.auth()
@@ -25,7 +26,7 @@ function Signup() {
                         try{
                             axios({
                                 method:"post",
-                                url:"http://localhost:8080/user",
+                                url:`${process.env.REACT_APP_BACKEND_URL}/user`,
                                 headers: {
                                     Authorization: `Bearer ${token}`,
                                     "Content-type": "application/json",
@@ -33,7 +34,8 @@ function Signup() {
                                 data: JSON.stringify({
                                     fullName: fullName,
                                     email: email,
-                                    phoneNumber:phone
+                                    phoneNumber:phone,
+                                    salesforceUser:false
                                 }),
                             })
                         }

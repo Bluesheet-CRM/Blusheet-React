@@ -27,7 +27,7 @@ function Home() {
               </p>
               <br />
               <br />
-              <a href="http://localhost:8080/auth/login">
+              <a href={`${process.env.REACT_APP_BACKEND_URL}/auth/login`}>
               <Button variant="contained" color="primary">
                 salesforce &nbsp;
                 <WbCloudyIcon />

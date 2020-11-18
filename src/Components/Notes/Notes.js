@@ -111,7 +111,7 @@ function Notes(props) {
     setLoading(true);
     const result = await axios({
       method: "get",
-      url: "https://sf-node547.herokuapp.com/notes",
+      url: `${process.env.REACT_APP_BACKEND_URL}/notes`,
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -123,7 +123,7 @@ function Notes(props) {
 
       const data = await axios({
         method: "post",
-        url: "https://sf-node547.herokuapp.com/getMultipleNotes",
+        url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleNotes`,
         data: id,
       });
       if (data.data.statusCode === 200) {
@@ -166,7 +166,7 @@ function Notes(props) {
       };
       const result = await axios({
         method: "post",
-        url: "https://sf-node547.herokuapp.com/addNotes",
+        url: `${process.env.REACT_APP_BACKEND_URL}/addNotes`,
         data: payload,
       });
       if (result.data.statusCode === 200) {
@@ -196,7 +196,7 @@ function Notes(props) {
     } else {
       const result = await axios({
         method: "delete",
-        url: `https://sf-node547.herokuapp.com/deleteNotes/${id}`,
+        url: `${process.env.REACT_APP_BACKEND_URL}/deleteNotes/${id}`,
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");

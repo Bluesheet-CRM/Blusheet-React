@@ -78,7 +78,7 @@ function Notes(props) {
     setLoading(true);
     const result = await axios({
       method: "get",
-      url: "https://sf-node547.herokuapp.com/tasks",
+      url: `${process.env.REACT_APP_BACKEND_URL}/tasks`,
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -90,7 +90,7 @@ function Notes(props) {
 
       const data = await axios({
         method: "post",
-        url: "https://sf-node547.herokuapp.com/getMultipleTasks",
+        url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleTasks`,
         data: id,
       });
       if (data.data.statusCode === 200) {
@@ -133,7 +133,7 @@ function Notes(props) {
 
     const result = await axios({
       method: "post",
-      url: "https://sf-node547.herokuapp.com/addTasks",
+      url: `${process.env.REACT_APP_BACKEND_URL}/addTasks`,
       data: payload,
     });
     if (result.data.statusCode === 200) {
@@ -155,7 +155,7 @@ function Notes(props) {
     } else {
       const result = await axios({
         method: "delete",
-        url: `https://sf-node547.herokuapp.com/deleteTasks/${id}`,
+        url: `${process.env.REACT_APP_BACKEND_URL}/deleteTasks/${id}`,
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");

@@ -34,7 +34,7 @@ function Mail() {
     setLoading(true);
     const result = await axios({
       method: "get",
-      url: "http://localhost:8080/email",
+      url: `${process.env.REACT_APP_BACKEND_URL}/email`,
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -46,7 +46,7 @@ function Mail() {
 
       const data = await axios({
         method: "post",
-        url: "http://localhost:8080/mutipleEmailMessage",
+        url: `${process.env.REACT_APP_BACKEND_URL}/mutipleEmailMessage`,
         data: id,
       });
       if (data.data.statusCode === 200) {
@@ -98,7 +98,7 @@ function Mail() {
 
     const result = await axios({
       method: "post",
-      url: "http://localhost:8080/sendEmail",
+      url: `${process.env.REACT_APP_BACKEND_URL}/sendEmail`,
       data: payload,
     });
     if (result.data.statusCode === 200) {
@@ -120,7 +120,7 @@ function Mail() {
 
       const result1 = await axios({
         method: "post",
-        url: "http://localhost:8080/addEmail",
+        url: `${process.env.REACT_APP_BACKEND_URL}/addEmail`,
         data: emailMessage,
       });
       if (result1.data.statusCode === 200) {
@@ -137,7 +137,7 @@ function Mail() {
     } else {
       const result = await axios({
         method: "delete",
-        url: `http://localhost:8080/deleteEmailMessage/${id}`,
+        url: `${process.env.REACT_APP_BACKEND_URL}/deleteEmailMessage/${id}`,
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");
