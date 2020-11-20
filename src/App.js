@@ -12,7 +12,6 @@ import 'react-notifications-component/dist/theme.css'
 
 const App = () => {
   const routing = useRoutes(routes);
-  console.log(process.env.REACT_APP_BACKEND_UR);
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles />
