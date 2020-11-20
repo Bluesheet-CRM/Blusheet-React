@@ -5,6 +5,8 @@ import {Link} from "react-router-dom";
 
 import image from "../../Assets/home.jpg";
 function Home() {
+  console.log(process.env.REACT_APP_BACKEND_URL);
+  
   return (
     <Container>
       <Grid container justify="center" style={{ marginTop: "20vh" }}>
