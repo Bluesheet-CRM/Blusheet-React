@@ -10,6 +10,8 @@ import {
   TextField,
   MenuItem,
   MenuList,
+  Backdrop,
+  CircularProgress 
 } from "@material-ui/core";
 import axios from "axios";
 import SearchIcon from "@material-ui/icons/Search";
@@ -18,6 +20,8 @@ import AddOpportunity from "../OpportunityNew/AddOpportunity"
 import { AuthContext } from "../../contexts/AuthContext";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
 import {Link} from "react-router-dom";
+import cookie from 'react-cookies'
+
 const useStyles = makeStyles((theme) => ({
   root: {
     padding: "2px 4px",
@@ -36,6 +40,10 @@ const useStyles = makeStyles((theme) => ({
     height: 28,
     margin: 4,
   },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  }
 }));
 
 function Homepage() {
@@ -56,15 +64,81 @@ function Homepage() {
   const [addOpportunity,setAddOpportunity] = useState(false);
   const [open2, setOpen2] = useState(false);
   const [skeleton,setSkeleton] = useState({});
+  const [load, setLoad] = useState(false);
+  const [loading1, setLoading1] = useState(false);
+
 
 
 
   const { currentUser, loading } = useContext(AuthContext);
-  const {opportunitySkeleton} = useContext(OpportunityContext);
+  const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
+  console.log(opportunitySkeleton,salesforceUser)
 
+  async function fetchData(){
+    setLoading1(true);
+      let token = cookie.load('access_token');
+      let url = cookie.load('instance_url');
+      const payload = {
+        url,
+        token
+      }
+      console.log(payload)
+      try{
+      let result = await axios({
+        url:`${process.env.REACT_APP_BACKEND_URL}/allOpportunities`,
+        method:"post",
+        data:payload
+      })
+      if(result){
+        if (result.data.statusCode === 200) {
+          const id = [];
+          result.data.payload.data.records.map((value, index) => {
+            id.push(value.Id);
+            return null;
+          });
+          const payload = {
+            url: url,
+            token: token,
+            id:id
+          }
+          try{
+          let data = await axios({
+            method: "post",
+            url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleRecords`,
+            data: payload,
+          })
+          if(data){
+            if (data.data.statusCode === 200) {
+              setOpportunityData(data.data.payload.data);
+              setLoading1(false);
+              setLoad(true);
+            }
+            else{
+              window.alert("Server error")
+            }
+          }
+        }catch(err){
+          window.alert(err.message)
+          setLoading1(false);
+          setLoad(true);
+        };
+          
+        }
+        setLoad(true);
+        setLoading1(false);
+      }
+      else{
+        window.alert("no data");
+      }
+    }catch(err){
+      window.alert(err.message)
+      setLoading1(false);
+      setLoad(true);
+    };
+  }
   useEffect(() => {
-    const opportunities = JSON.parse(localStorage.getItem("response"));
-    if (!loading) {
+
+    if (false) {
       axios({
         method: "get",
         url: "http://localhost:8080/pipelines",
@@ -88,7 +162,10 @@ function Homepage() {
           window.alert(err.message);
         });
     }
-  }, [loading]);
+    else{
+      fetchData();
+    }
+  }, []);
 
   
 
@@ -110,7 +187,7 @@ function Homepage() {
     newArray["Id"] = id;
     setSendData(newArray);
 
-    opportunity.forEach((element) => {
+    opportunityData.forEach((element) => {
       if (element.Id === id) {
         setSelectedValue(element);
         setName(element.Name);
@@ -125,15 +202,26 @@ function Homepage() {
   };
 
   const handleSave = async () => {
-    const payload = [];
-    payload[0] = {};
-    payload[0].Id = id;
-    payload[0].Name = name;
-    payload[0].StageName = stage;
-    payload[0].CloseDate = new Date(date);
-    payload[0].Amount = amount;
-    payload[0].NextStep = step;
-    console.log(payload);
+
+    let token = cookie.load('access_token');
+    let url = cookie.load('instance_url');
+
+    const data = [];
+    data[0] = {};
+    data[0].Id = id;
+    data[0].Name = name;
+    data[0].StageName = stage;
+    data[0].CloseDate = new Date(date);
+    data[0].Amount = amount;
+    data[0].NextStep = step;
+    
+    const payload = {
+      token: token,
+      url:url,
+      editValue:data
+    }
+
+
     const result = await axios({
       method: "post",
       url: `${process.env.REACT_APP_BACKEND_URL}/updateMultiple`,
@@ -163,6 +251,9 @@ function Homepage() {
   };
   return (
     <>
+    {loading1 && <Backdrop className={classes.backdrop}  open={loading1} onClick={()=>setLoading1(false)}>
+        <CircularProgress color="inherit" />
+      </Backdrop>}
     {addOpportunity && <AddOpportunity open={open2} handleClose={setOpen2} fields={skeleton} />}
       <Grid
         container
@@ -327,9 +418,9 @@ function Homepage() {
             </IconButton>
 
             <MenuList className={show ? "hide" : "show"}>
-              {value1.length > 0 &&
-                filterArray.length > 0 &&
-                filterArray
+              {value1.length >= 0 &&
+                opportunityData.length > 0 &&
+                opportunityData
                   .filter((el) => el.Name.includes(value1))
                   .map((value, index) => {
                     return (

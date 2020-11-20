@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import LinkIcon from "@material-ui/icons/Link";
 import axios from "axios";
 import {
@@ -26,7 +26,10 @@ import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import Statistics from "./Statistics";
 import TaskTable from "./TaskTable";
+import { AuthContext } from "../../contexts/AuthContext";
+import { OpportunityContext } from "../../contexts/OpportunityContext";
 import { Search as SearchIcon } from "react-feather";
+import cookie from 'react-cookies';
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
     position: "relative",
@@ -50,7 +53,7 @@ const useStylesFacebook = makeStyles((theme) => ({
 function Notes(props) {
   const classes = useStylesFacebook();
   const [notesArray, setNotesArray] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading1, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [index, setIndex] = useState(0);
   const [opportunity, setOpportunity] = useState([]);
@@ -61,6 +64,9 @@ function Notes(props) {
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
   const oppRef = React.useRef(null);
+  const { currentUser, loading } = useContext(AuthContext);
+  const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
+  console.log(opportunitySkeleton,salesforceUser)
 
   const handleToggle1 = () => {
     setOpen1((prevOpen) => !prevOpen);
@@ -75,10 +81,18 @@ function Notes(props) {
   };
 
   async function fetchData() {
+
+    let token = cookie.load('access_token');
+    let url = cookie.load('instance_url');
+    const payload = {
+      token: token,
+      url:url
+    }
     setLoading(true);
     const result = await axios({
-      method: "get",
-      url: `${process.env.REACT_APP_BACKEND_URL}/tasks`,
+      method: "post",
+      url: `${process.env.REACT_APP_BACKEND_URL}/allTasks`,
+      data: payload
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -88,19 +102,19 @@ function Notes(props) {
       });
       console.log(id);
 
+      const payload1 = {
+        token: token,
+        url:url,
+        id:id
+      }
       const data = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleTasks`,
-        data: id,
+        data: payload1,
       });
       if (data.data.statusCode === 200) {
         console.log(data.data.payload.data);
         setNotesArray(data.data.payload.data);
-        localStorage.setItem(
-          "tasks",
-          JSON.stringify(data.data.payload.data, 2, null)
-        );
-
         setLoading(false);
         setLoad(true);
       }
@@ -113,23 +127,27 @@ function Notes(props) {
   }
 
   useEffect(() => {
-    fetchData();
-    const opportunities = JSON.parse(localStorage.getItem("response"));
-    setOpportunity(opportunities);
-    // const response = JSON.parse(localStorage.getItem("notes"));
-    // setNotesArray(response);
-
-    // setLoad(true);
+    fetchData();;
+    setOpportunity(opportunityData);
   }, []);
 
   const handleSave = async () => {
-    const payload = {
+
+    let token = cookie.load('access_token');
+    let url = cookie.load('instance_url');
+
+    const data = {
       Subject: sub,
       Description: desc,
       Status: status,
       ActivityDate: new Date(date),
       WhatId: selected,
     };
+    const payload = {
+      token: token,
+      url:url,
+      data: data
+    }
 
     const result = await axios({
       method: "post",
@@ -150,12 +168,20 @@ function Notes(props) {
   };
 
   const handleDelete = async (id) => {
+    let token = cookie.load('access_token');
+    let url = cookie.load('instance_url');
+
     if (id === undefined) {
       setNotesArray(notesArray.filter((el) => el.Id !== undefined));
     } else {
+      const payload = {
+        token: token,
+        url:url,
+      }
       const result = await axios({
-        method: "delete",
+        method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/deleteTasks/${id}`,
+        data:payload
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");
@@ -175,8 +201,8 @@ function Notes(props) {
       }}
     >
       <Container maxWidth={false}>
-        <Grid container>
-          <Grid item xl={3} md={3}>
+        {/* <Grid container> */}
+          {/* <Grid item xl={3} md={3}>
             <Statistics />
           </Grid>
           <Grid item xl={3} md={3}>
@@ -188,8 +214,8 @@ function Notes(props) {
           <Grid item xl={3} md={3}>
             <Statistics />
           </Grid>
-        </Grid>
-        <Box
+        </Grid> */}
+        {/* <Box
         display="flex"
         style={{marginTop:"2rem",width:"90%"}}
         justifyContent="flex-end"
@@ -200,8 +226,8 @@ function Notes(props) {
         >
           Add Task
         </Button>
-      </Box>
-      <Box mt={3}>
+      </Box> */}
+      {/* <Box mt={3}>
         <Card>
           <CardContent>
             <Box maxWidth={500}>
@@ -225,10 +251,68 @@ function Notes(props) {
             </Box>
           </CardContent>
         </Card>
-      </Box>
-        {load && <TaskTable data={notesArray} />}
-        {/* {load && (
+      </Box> */}
+        {/* {load && <TaskTable data={notesArray} />} */}
+        {load && (
         <Grid container justify="space-evenly">
+          <Grid item sm={4} md={4}>
+            <Card
+              style={{ height: "60vh", marginTop: "3rem" }}
+              variant="outlined"
+            >
+              <CardContent style={{ padding: "1rem" }}>
+                <h3>All your Tasks</h3>
+                <br />
+                <hr /><MenuList>
+                  {load &&
+                    notesArray.map((value, index) => {
+                      return (
+                        <MenuItem
+                          key={index}
+                          className="allNotes"
+                          onClick={() => setIndex(index)}
+                        >
+                          {" "}
+                          <p>&nbsp;{value.Subject}</p>
+                          <p className="note-icons">
+                            <LaunchRoundedIcon
+                              onClick={() => setIndex(index)}
+                            />{" "}
+                            <DeleteRoundedIcon
+                              onClick={() => {
+                                handleDelete(value.Id);
+                              }}
+                            />
+                          </p>{" "}
+                        </MenuItem>
+                      );
+                    })}
+                </MenuList>{loading1 && (
+                  <div className={classes.root}>
+                    <CircularProgress
+                      variant="determinate"
+                      className={classes.bottom}
+                      size={40}
+                      thickness={4}
+                      {...props}
+                      value={100}
+                    />
+                    <CircularProgress
+                      variant="indeterminate"
+                      disableShrink
+                      className={classes.top}
+                      classes={{
+                        circle: classes.circle,
+                      }}
+                      size={40}
+                      thickness={4}
+                      {...props}
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
           <Grid item sm={5} md={5}>
             <>
               {console.log(index, notesArray)}
@@ -360,8 +444,8 @@ function Notes(props) {
               </Card>
             </>
           </Grid>
-        </Grid> */}
-        {/* )} */}
+        </Grid> 
+         )}
       </Container>
     </div>
   );

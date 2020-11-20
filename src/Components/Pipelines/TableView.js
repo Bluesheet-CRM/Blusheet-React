@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import { AgGridReact, AgGridColumn } from "ag-grid-react";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine.css";
@@ -7,7 +7,9 @@ import "./TableView.css";
 import Loader from "react-loaders";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
+import { AuthContext } from "../../contexts/AuthContext";
+import { OpportunityContext } from "../../contexts/OpportunityContext";
+import cookie from 'react-cookies'
 //material UI
 import {
   ClickAwayListener,
@@ -34,7 +36,7 @@ let loader = <Loader type="square-spin" />;
 
 export default function TableView() {
   const [rowData, setRowData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading1, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [editValue, setEditValue] = useState([]);
   const [save, setSave] = useState(false);
@@ -194,11 +196,23 @@ export default function TableView() {
       },
     },
   });
+  
+
+  const { currentUser, loading } = useContext(AuthContext);
+  const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
 
   async function fetchData() {
+    let token = cookie.load('access_token');
+      let url = cookie.load('instance_url');
+
+    const payload = {
+      token: token,
+      url: url,
+  }
     const result = await axios({
-      method: "get",
-      url: `${process.env.REACT_APP_BACKEND_URL}/allAccounts`,
+      method: "post",
+      url: `${process.env.REACT_APP_BACKEND_URL}/allOpportunities`,
+      data:payload
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -206,18 +220,20 @@ export default function TableView() {
         id.push(value.Id);
         return null;
       });
+      console.log(id);
+      const payload1={
+        token: token,
+        url: url,
+        id:id
+      }
 
       const data = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleRecords`,
-        data: id,
+        data: payload1,
       });
       if (data.data.statusCode === 200) {
-        setRowData(data.data.payload.data);
-        localStorage.setItem(
-          "response",
-          JSON.stringify(data.data.payload.data, 2, null)
-        );
+        setOpportunityData(data.data.payload.data);
         setFilteredValue(data.data.payload.data);
         setFields(data.data.payload.data[0]);
         let gettingFields = Object.assign({}, data.data.payload.data[0]);
@@ -241,8 +257,7 @@ export default function TableView() {
   useEffect(() => {
     setLoading(true);
     // fetchData();
-    const response = JSON.parse(localStorage.getItem("response"));
-    setRowData(response);
+    const response = opportunityData;
     setFilteredValue(response);
     setFields(response[0]);
     let gettingFields = Object.assign({}, response[0]);
@@ -301,21 +316,27 @@ export default function TableView() {
     setSave(true);
   };
   const handleSave = async () => {
+    let token = cookie.load('access_token');
+      let url = cookie.load('instance_url');
     //add logic for adding new row
     if (editValue[0].Id === null) {
-      const payload = {};
+      const data = {};
       Object.entries(editValue[0]).map((item) => {
         if (item[1] !== null) {
-          payload[item[0]] = item[1];
+          data[item[0]] = item[1];
         }
         return null;
       });
-      console.log(payload);
-      payload.CloseDate = new Date(payload.CloseDate);
+      data.CloseDate = new Date(data.CloseDate);
+      const payload = {
+          token: token,
+          url: url,
+          data: data
+      }
       console.log(payload);
       const result = await axios({
         method: "post",
-        url: `${process.env.REACT_APP_BACKEND_URL}/addAccount`,
+        url: `${process.env.REACT_APP_BACKEND_URL}/addOpportunity`,
         data: payload,
       });
       if (result.data.statusCode === 200) {
@@ -337,11 +358,15 @@ export default function TableView() {
         window.alert("server error");
       }
     } else {
-      console.log(editValue);
+      const payload = {
+        token: token,
+        url: url,
+        editValue: editValue
+    }
       const result = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/updateMultiple`,
-        data: editValue,
+        data: payload,
       });
       if (result.data.statusCode === 200) {
         let resultArray = [];
@@ -369,11 +394,11 @@ export default function TableView() {
 
   const addNewRow = () => {
     let newObject = {};
-    Object.entries(rowData[0]).map((item) => {
+    Object.entries(opportunityData[0]).map((item) => {
       newObject[item[0]] = null;
       return null;
     });
-    setRowData([...rowData, newObject]);
+    setOpportunityData([...opportunityData, newObject]);
     setAdd(true);
   };
   const handleToggle = () => {
@@ -406,17 +431,26 @@ export default function TableView() {
   }, [open]);
 
   const handleDelete = async () => {
+
+    let token = cookie.load('access_token');
+    let url = cookie.load('instance_url');
+
     if (delId === null) {
-      setRowData(rowData.filter((el) => el.Id !== null));
+      setOpportunityData(opportunityData.filter((el) => el.Id !== null));
     } else {
+      const payload = {
+        token: token,
+        url: url,
+    }
       const result = await axios({
-        method: "delete",
+        method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/delete/${delId}`,
+        data: payload
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");
         setDelId("");
-        setRowData(rowData.filter((el) => el.Id !== delId));
+        setOpportunityData(opportunityData.filter((el) => el.Id !== delId));
       } else {
         window.alert("server Error");
       }
@@ -583,7 +617,7 @@ export default function TableView() {
               resizable: true,
             }}
             singleClickEdit={true}
-            rowData={rowData}
+            rowData={opportunityData}
             rowSelection="single"
             onRowSelected={(e) => {
               setSelected(true);

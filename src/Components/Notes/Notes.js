@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useContext } from "react";
 import CKEditor from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import {
   Button,
   Grid,
   Card,
-
   CardContent,
   makeStyles,
-
   CircularProgress,
   TextField,
   MenuItem,
@@ -24,6 +22,10 @@ import "./Notes.css";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
+import { AuthContext } from "../../contexts/AuthContext";
+import { OpportunityContext } from "../../contexts/OpportunityContext";
+import cookie from 'react-cookies';
+
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
     position: "relative",
@@ -48,7 +50,7 @@ function Notes(props) {
   const classes = useStylesFacebook();
   const [note, setNote] = useState("");
   const [notesArray, setNotesArray] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading1, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [index, setIndex] = useState(0);
   const [add, setAdd] = useState(false);
@@ -58,6 +60,10 @@ function Notes(props) {
   const [selected, setSelected] = useState("");
   const [open1, setOpen1] = React.useState(false);
   const oppRef = React.useRef(null);
+
+  const { currentUser, loading } = useContext(AuthContext);
+  const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
+  console.log(opportunitySkeleton,salesforceUser)
 
   const anchorRef = React.useRef(null);
 
@@ -109,9 +115,17 @@ function Notes(props) {
 
   async function fetchData() {
     setLoading(true);
+    let token = cookie.load('access_token');
+      let url = cookie.load('instance_url');
+
+      const payload = {
+        token: token,
+        url:url
+      }
     const result = await axios({
-      method: "get",
-      url: `${process.env.REACT_APP_BACKEND_URL}/notes`,
+      method: "post",
+      url: `${process.env.REACT_APP_BACKEND_URL}/allNotes`,
+      data: payload
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -120,11 +134,16 @@ function Notes(props) {
         return null;
       });
       console.log(id);
+      const payload1 = {
+        token: token,
+        url:url,
+        id: id
+      }
 
       const data = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleNotes`,
-        data: id,
+        data: payload1,
       });
       if (data.data.statusCode === 200) {
         console.log(data.data.payload.data);
@@ -147,23 +166,25 @@ function Notes(props) {
 
   useEffect(() => {
     fetchData();
-    const opportunities = JSON.parse(localStorage.getItem("response"));
-    setOpportunity(opportunities);
-    // const response = JSON.parse(localStorage.getItem("notes"));
-    // setNotesArray(response);
-
-    // setLoad(true);
+    setOpportunity(opportunityData);
   }, []);
 
   const handleSave = async () => {
+    let token = cookie.load('access_token');
+      let url = cookie.load('instance_url');
     if (selected === "") {
       window.alert("Choose The Opportunity");
     } else {
-      const payload = {
+      const data = {
         Title: notesArray[index].Title,
         Body: note,
         ParentId: selected,
       };
+      const payload = {
+        token: token,
+        url:url,
+        data:data
+      }
       const result = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/addNotes`,
@@ -191,12 +212,19 @@ function Notes(props) {
   };
 
   const handleDelete = async (id) => {
+    let token = cookie.load('access_token');
+      let url = cookie.load('instance_url');
     if (id === undefined) {
       setNotesArray(notesArray.filter((el) => el.Id !== undefined));
     } else {
+      const payload = {
+        token: token,
+        url:url,
+      }
       const result = await axios({
-        method: "delete",
+        method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/deleteNotes/${id}`,
+        data: payload
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");
@@ -299,7 +327,7 @@ function Notes(props) {
                       );
                     })}
                 </MenuList>
-                {loading && (
+                {loading1   && (
                   <div className={classes.root}>
                     <CircularProgress
                       variant="determinate"
@@ -400,7 +428,7 @@ function Notes(props) {
                       <Paper>
                         <ClickAwayListener onClickAway={() => setOpen1(false)}>
                           <MenuList autoFocusItem={open1} id="menu-list-grow">
-                            {opportunity.map((value, index) => {
+                            {opportunityData.map((value, index) => {
                               return (
                                 <MenuItem
                                   key={index}

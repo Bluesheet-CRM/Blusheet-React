@@ -22,7 +22,7 @@ import {
   Users as UsersIcon
 } from 'react-feather';
 import NavItem from './NavItem';
-
+import base from "../../../utils/base";
 const user = {
   avatar: '/static/images/avatars/avatar_6.png',
   jobTitle: 'Senior Developer',
@@ -56,19 +56,9 @@ const items = [
     title: 'Settings'
   },
   {
-    href: '/login',
+    href: '/logout',
     icon: LockIcon,
-    title: 'Login'
-  },
-  {
-    href: '/register',
-    icon: UserPlusIcon,
-    title: 'Register'
-  },
-  {
-    href: '/404',
-    icon: AlertCircleIcon,
-    title: 'Error'
+    title: 'Logout'
   }
 ];
 
@@ -97,6 +87,11 @@ const NavBar = ({ onMobileClose, openMobile }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
+
+  const handleLogout = async()=>{
+    await base.app().auth().signOut();
+		window.location.href = "/";
+  }
 
   const content = (
     <Box
@@ -135,10 +130,15 @@ const NavBar = ({ onMobileClose, openMobile }) => {
         <List>
           {items.map((item) => (
             <NavItem
-              href={item.href}
+              href={item.title !=="Logout" ? item.href : "#"}
               key={item.title}
               title={item.title}
               icon={item.icon}
+              onClick={()=>{
+                if(item.title === "Logout"){
+                  handleLogout();
+                }
+              } }
             />
           ))}
         </List>

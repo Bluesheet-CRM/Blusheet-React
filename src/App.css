@@ -18,9 +18,3 @@
     min-height: 70vh !important;
     padding-left: 2rem !important;
 }
-.show{
-    display: block;
-}
-.hide{
-    display: none;
-}

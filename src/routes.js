@@ -12,6 +12,8 @@ import Login from "./Components/Auth/Login";
 import Signup from "./Components/Auth/Signup";
 import Home from "./Components/Home/Home";
 import NotFoundView from "./Components/errors/NotFoundView";
+import Redirect from "./Components/Auth/Redirect";
+
 const routes = [
   {
     path: '/app',
@@ -31,6 +33,7 @@ const routes = [
     element: <MainLayout />,
     children:[
       { path: '/', element: <Home /> },
+      {path: '/auth/callback', element: <Redirect />},
       { path: '/home', element: <Homepage /> },
       {path : '/login',element: <Login/> },
       {path : '/signup',element: <Signup /> },
