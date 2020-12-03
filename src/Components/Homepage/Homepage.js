@@ -15,12 +15,11 @@ import {
 } from "@material-ui/core";
 import axios from "axios";
 import SearchIcon from "@material-ui/icons/Search";
-
 import AddOpportunity from "../OpportunityNew/AddOpportunity"
 import { OpportunityContext } from "../../contexts/OpportunityContext";
 import {Link} from "react-router-dom";
 import cookie from 'react-cookies'
-
+import { createBrowserHistory } from 'history';
 const useStyles = makeStyles((theme) => ({
   root: {
     padding: "2px 4px",
@@ -47,7 +46,8 @@ const useStyles = makeStyles((theme) => ({
 
 function Homepage() {
   const classes = useStyles();
-;
+  let history = createBrowserHistory();
+
   const [open1, setOpen1] = useState(false);
   const [value1, setValue1] = useState("");
   const [show, setShow] = useState(false);
@@ -139,7 +139,13 @@ function Homepage() {
     };
   }
   useEffect(() => {
+    let token = cookie.load('auth_token');
+    if(token === null | token === undefined){
+        window.location.href="/";
+    }
+    else{
       fetchData();
+    }
   }, []);
 
   

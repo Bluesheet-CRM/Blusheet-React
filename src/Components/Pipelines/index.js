@@ -8,7 +8,7 @@ import Page from '../Page';
 import TableView from "./TableView";
 import Statistics from "./Statistics";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
-
+import cookie from 'react-cookies';
 const useStyles = makeStyles((theme) => ({
   root: {
     backgroundColor: theme.palette.background.dark,
@@ -27,7 +27,12 @@ const Pipeline = () => {
   
   useEffect(()=>{
 
-    let temp1 = 0;
+    let token = cookie.load('auth_token');
+    if(token === null | token === undefined){
+        window.location.href="/";
+    }
+    else{
+      let temp1 = 0;
     let temp2 = 0;
     let temp3 = 0;
     for(let i = 0 ; i < opportunityData.length ; i++){
@@ -44,6 +49,9 @@ const Pipeline = () => {
     setClosed(temp1);
     setWon(temp2);
     setMonth(temp3);
+    }
+
+    
     onbeforeunload = e => "Changes made will not be saved";
   })
 

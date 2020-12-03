@@ -22,7 +22,7 @@ import {
 } from 'react-feather';
 import NavItem from './NavItem';
 import base from "../../../utils/base";
-import { setRawCookie } from 'react-cookies';
+
 const user = {
   avatar: '/static/images/avatars/avatar_6.png',
   jobTitle: 'Senior Developer',

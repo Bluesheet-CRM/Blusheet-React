@@ -166,8 +166,15 @@ function Notes(props) {
   }
 
   useEffect(() => {
-    fetchData();
-    setOpportunity(opportunityData);
+    let token = cookie.load('auth_token');
+    if(token === null | token === undefined){
+        window.location.href="/";
+    }
+    else{
+      fetchData();
+     setOpportunity(opportunityData);
+    }
+    
     onbeforeunload = e => "Changes made will not be saved";
   }, []);
 

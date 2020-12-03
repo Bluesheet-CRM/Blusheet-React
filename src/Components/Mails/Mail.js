@@ -19,6 +19,7 @@ import LinkIcon from "@material-ui/icons/Link";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
+import { createBrowserHistory } from 'history';
 import cookie from 'react-cookies';
 const useStyles = makeStyles((theme) => ({
   backdrop: {
@@ -28,6 +29,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 function Mail() {
   const classes = useStyles();
+  let history = createBrowserHistory();
   const [toAddress, setToAddress] = useState("");
 
   const [subject, setSubject] = useState("");
@@ -92,8 +94,16 @@ function Mail() {
     }
   }
   useEffect(() => {
-    fetchData();
-    setOpportunity(opportunityData);
+
+    let token = cookie.load('auth_token');
+    if(token === null | token === undefined){
+        window.location.href="/";
+    }
+    else{
+      fetchData();
+      setOpportunity(opportunityData);
+    }
+
     onbeforeunload = e => "Changes made will not be saved";
   }, []);
 
