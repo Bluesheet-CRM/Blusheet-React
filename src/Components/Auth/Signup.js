@@ -65,7 +65,6 @@ function Signup() {
       .auth()
       .signInWithPopup(provider)
       .then((result) => {
-        console.log(result.profile);
         app
           .auth()
           .currentUser.getIdToken()
@@ -83,7 +82,6 @@ function Signup() {
                 salesforceUser: false,
               }),
             })
-              .then((response) => console.log(response))
               .catch((err) => window.alert(err.message));
           });
           window.location.href="/home"

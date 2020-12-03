@@ -18,7 +18,6 @@ import axios from "axios";
 import LinkIcon from "@material-ui/icons/Link";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
-import { AuthContext } from "../../contexts/AuthContext";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
 import cookie from 'react-cookies';
 const useStyles = makeStyles((theme) => ({
@@ -40,22 +39,19 @@ function Mail() {
   const [load, setLoad] = useState(false);
   const [messageArray, setMessageArray] = useState([]);
   const oppRef = React.useRef(null);
-  const [index, setIndex] = useState(0);
+  const [ setIndex] = useState(0);
 
   
-  const { currentUser, loading } = useContext(AuthContext);
-  const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
-  console.log(opportunitySkeleton,salesforceUser)
+  const {opportunitySkeleton,salesforceUser,opportunityData} = useContext(OpportunityContext);
+
 
 
   async function fetchData() {
     setLoading1(true);
-    let token = cookie.load('access_token');
-      let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
 
       const payload = {
         token: token,
-        url:url
       }
 
     const result = await axios({
@@ -69,11 +65,10 @@ function Mail() {
         id.push(value.Id);
         return null;
       });
-      console.log(id);
+
 
       const payload1 = {
         token: token,
-        url:url,
         id: id
       }
 
@@ -83,7 +78,7 @@ function Mail() {
         data: payload1,
       });
       if (data.data.statusCode === 200) {
-        console.log(data.data.payload.data);
+
         setMessageArray(data.data.payload.data);
 
 
@@ -93,16 +88,13 @@ function Mail() {
       setLoad(true);
     } else {
       setLoading1(false);
-      window.alert("server error");
+      window.alert(result.data.payload.msg);
     }
   }
   useEffect(() => {
     fetchData();
     setOpportunity(opportunityData);
-    // const response = JSON.parse(localStorage.getItem("notes"));
-    // setNotesArray(response);
-
-    // setLoad(true);
+    onbeforeunload = e => "Changes made will not be saved";
   }, []);
 
   const handleToggle1 = () => {
@@ -117,23 +109,22 @@ function Mail() {
     setOpen1(false);
   };
   const handleSubmit = async () => {
-    let token = cookie.load('access_token');
-    let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
 
     
     const data = {
       inputs: [
         {
-          emailAddresses: `${toAddress}`,
-          emailSubject: `${subject}`,
-          emailBody: `${content}`,
-          senderType: "CurrentUser",
+          "emailAddresses": `${toAddress}`,
+          "emailSubject": `${subject}`,
+          "emailBody": `${content}`,
+          "senderType": "CurrentUser",
         },
       ],
     };
+    
     const payload = {
       token: token,
-      url:url,
       data:data
     }
 
@@ -142,6 +133,9 @@ function Mail() {
       method: "post",
       url: `${process.env.REACT_APP_BACKEND_URL}/sendEmail`,
       data: payload,
+      headers:{
+        'Content-Type': 'application/json'
+      }
     });
     if (result.data.statusCode === 200) {
       const emailMessage = {
@@ -162,7 +156,6 @@ function Mail() {
 
       const payload1 = {
         token: token,
-        url:url,
         emailMessage: emailMessage
       }
 
@@ -172,25 +165,22 @@ function Mail() {
         data: payload1,
       });
       if (result1.data.statusCode === 200) {
-        console.log(result1.data);
         fetchData();
       } else {
-        window.alert(result1.data.payload.data);
+        window.alert(result1.data.payload.msg);
       }
     }
   };
 
   const handleDelete = async (id) => {
 
-    let token = cookie.load('access_token');
-    let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
 
     if (id === undefined) {
       setMessageArray(messageArray.filter((el) => el.Id !== undefined));
     } else {
       const payload = {
         token: token,
-        url:url,
       }
       const result = await axios({
         method: "post",
@@ -201,7 +191,7 @@ function Mail() {
         window.alert("Deleted Successfully");
         setMessageArray(messageArray.filter((el) => el.Id !== id));
       } else {
-        window.alert("server Error");
+        window.alert(result.data.payload.msg);
       }
     }
   };
@@ -217,7 +207,7 @@ function Mail() {
       </Backdrop>}
       <Grid container justify="center">
         <Grid item xl={4} md={4}>
-          <Card style={{ height: "60vh" }} variant="outlined">
+          <Card style={{ height: "60vh",overflowY:"auto" }} variant="outlined">
             <CardContent style={{ padding: "1rem" }}>
               <h3>All your Emails</h3>
               <br />

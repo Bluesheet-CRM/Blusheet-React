@@ -5,9 +5,7 @@ import "ag-grid-community/dist/styles/ag-theme-alpine.css";
 import axios from "axios";
 import "./TableView.css";
 import Loader from "react-loaders";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { AuthContext } from "../../contexts/AuthContext";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
 import cookie from 'react-cookies'
 //material UI
@@ -25,189 +23,36 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Grid
 } from "@material-ui/core";
 import LocalOfferRoundedIcon from "@material-ui/icons/LocalOfferRounded";
 import BackupIcon from "@material-ui/icons/Backup";
-import Chart from "react-apexcharts";
 
 //spinner
 let loader = <Loader type="square-spin" />;
 
 export default function TableView() {
-  const [rowData, setRowData] = useState([]);
-  const [loading1, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [editValue, setEditValue] = useState([]);
   const [save, setSave] = useState(false);
   const [selected, setSelected] = useState(false);
   const [fields, setFields] = useState({});
   const [fields1, setFields1] = useState({});
-  const [filteredValue, setFilteredValue] = useState([]);
+  const [filteredValue,setFilteredValue] = useState([]);
   const [delId, setDelId] = useState("");
   const [add, setAdd] = useState(false);
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef(null);
   const [upload, setUpload] = useState(false);
-  const [chart, setChart] = useState({
-    series: [
-      {
-        name: "PRODUCT A",
-        data: [44, 55, 41, 67, 22, 43, 21, 49],
-      },
-      {
-        name: "PRODUCT B",
-        data: [13, 23, 20, 8, 13, 27, 33, 12],
-      },
-    ],
-    options: {
-      chart: {
-        type: "bar",
-        height: 350,
-        stacked: true,
-        stackType: "100%",
-      },
-      responsive: [
-        {
-          breakpoint: 480,
-          options: {
-            legend: {
-              position: "bottom",
-              offsetX: -10,
-              offsetY: 0,
-            },
-          },
-        },
-      ],
-      xaxis: {
-        categories: [
-          "2011 Q1",
-          "2011 Q2",
-          "2011 Q3",
-          "2011 Q4",
-          "2012 Q1",
-          "2012 Q2",
-          "2012 Q3",
-          "2012 Q4",
-        ],
-      },
-      fill: {
-        opacity: 1,
-      },
-      legend: {
-        position: "right",
-        offsetX: 0,
-        offsetY: 50,
-      },
-    },
-  });
-  const [chart1, setChart1] = useState({
-    series: [
-      {
-        name: "Website Blog",
-        type: "column",
-        data: [440, 505, 414, 671, 227, 413, 201, 352, 752, 320, 257, 160],
-      },
-      {
-        name: "Social Media",
-        type: "line",
-        data: [23, 42, 35, 27, 43, 22, 17, 31, 22, 22, 12, 16],
-      },
-    ],
-    options: {
-      chart: {
-        height: 350,
-        type: "line",
-      },
-      stroke: {
-        width: [0, 4],
-      },
-      title: {
-        text: "Traffic Sources",
-      },
-      dataLabels: {
-        enabled: true,
-        enabledOnSeries: [1],
-      },
-      labels: [
-        "01 Jan 2001",
-        "02 Jan 2001",
-        "03 Jan 2001",
-        "04 Jan 2001",
-        "05 Jan 2001",
-        "06 Jan 2001",
-        "07 Jan 2001",
-        "08 Jan 2001",
-        "09 Jan 2001",
-        "10 Jan 2001",
-        "11 Jan 2001",
-        "12 Jan 2001",
-      ],
-      xaxis: {
-        type: "datetime",
-      },
-      yaxis: [
-        {
-          title: {
-            text: "Website Blog",
-          },
-        },
-        {
-          opposite: true,
-          title: {
-            text: "Social Media",
-          },
-        },
-      ],
-    },
-  });
-  const [chart3, setChart3] = useState({
-    series: [
-      {
-        data: [400, 430, 448, 470, 540, 580, 690, 1100, 1200, 1380],
-      },
-    ],
-    options: {
-      chart: {
-        type: "bar",
-        height: 350,
-      },
-      plotOptions: {
-        bar: {
-          horizontal: true,
-        },
-      },
-      dataLabels: {
-        enabled: false,
-      },
-      xaxis: {
-        categories: [
-          "South Korea",
-          "Canada",
-          "United Kingdom",
-          "Netherlands",
-          "Italy",
-          "France",
-          "Japan",
-          "United States",
-          "China",
-          "Germany",
-        ],
-      },
-    },
-  });
-  
 
-  const { currentUser, loading } = useContext(AuthContext);
-  const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
+
+
+  const {opportunityData,setOpportunityData} = useContext(OpportunityContext);
 
   async function fetchData() {
-    let token = cookie.load('access_token');
-      let url = cookie.load('instance_url');
-
+    let token = cookie.load('auth_token');
     const payload = {
       token: token,
-      url: url,
   }
     const result = await axios({
       method: "post",
@@ -220,10 +65,8 @@ export default function TableView() {
         id.push(value.Id);
         return null;
       });
-      console.log(id);
       const payload1={
         token: token,
-        url: url,
         id:id
       }
 
@@ -231,7 +74,7 @@ export default function TableView() {
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleRecords`,
         data: payload1,
-      });
+      })
       if (data.data.statusCode === 200) {
         setOpportunityData(data.data.payload.data);
         setFilteredValue(data.data.payload.data);
@@ -241,7 +84,7 @@ export default function TableView() {
           gettingFields[item[0]] = true;
           return null;
         });
-        console.log(gettingFields);
+
         setFields1(gettingFields);
         setLoading(false);
         setLoad(true);
@@ -250,9 +93,11 @@ export default function TableView() {
       setLoading(false);
     } else {
       setLoading(false);
-      window.alert("server error");
+      window.alert(result.data.payload.msg);
     }
   }
+
+
 
   useEffect(() => {
     setLoading(true);
@@ -265,11 +110,12 @@ export default function TableView() {
       gettingFields[item[0]] = true;
       return null;
     });
-    console.log(gettingFields);
+
     setFields1(gettingFields);
     setLoad(true);
     setLoading(false);
   }, []);
+
 
   const [checked, setChecked] = React.useState(true);
 
@@ -295,7 +141,7 @@ export default function TableView() {
       newArray.map((value, index) => {
         if (value.Id === e.data.Id) {
           value[field] = e.newValue;
-          console.log(value);
+;
           present = true;
         }
         return null;
@@ -309,15 +155,14 @@ export default function TableView() {
       data[field] = e.newValue;
       let array = editValue;
       array.push(data);
-      console.log(array);
+
       setEditValue(array);
     }
 
     setSave(true);
   };
   const handleSave = async () => {
-    let token = cookie.load('access_token');
-      let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
     //add logic for adding new row
     if (editValue[0].Id === null) {
       const data = {};
@@ -330,10 +175,9 @@ export default function TableView() {
       data.CloseDate = new Date(data.CloseDate);
       const payload = {
           token: token,
-          url: url,
           data: data
       }
-      console.log(payload);
+
       const result = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/addOpportunity`,
@@ -355,12 +199,11 @@ export default function TableView() {
         setLoading(true);
         fetchData();
       } else {
-        window.alert("server error");
+        window.alert(result.data.payload.data);
       }
     } else {
       const payload = {
         token: token,
-        url: url,
         editValue: editValue
     }
       const result = await axios({
@@ -387,7 +230,7 @@ export default function TableView() {
         setLoading(true);
         fetchData();
       } else {
-        window.alert("server error");
+        window.alert(result.data.payload.msg);
       }
     }
   };
@@ -432,15 +275,13 @@ export default function TableView() {
 
   const handleDelete = async () => {
 
-    let token = cookie.load('access_token');
-    let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
 
     if (delId === null) {
       setOpportunityData(opportunityData.filter((el) => el.Id !== null));
     } else {
       const payload = {
         token: token,
-        url: url,
     }
       const result = await axios({
         method: "post",
@@ -452,7 +293,7 @@ export default function TableView() {
         setDelId("");
         setOpportunityData(opportunityData.filter((el) => el.Id !== delId));
       } else {
-        window.alert("server Error");
+        window.alert(result.data.payload.msg);
       }
     }
   };
@@ -585,7 +426,7 @@ export default function TableView() {
                     >
                       {Object.entries(fields1).map((item, index) => {
                         return (
-                          <div style={{ display: "flex" }}>
+                          <div style={{ display: "flex" }} key={index}>
                             <Checkbox
                               checked={item[1]}
                               onClick={(e) => handleCheck(e, index)}
@@ -631,7 +472,7 @@ export default function TableView() {
               checkboxSelection={true}
             ></AgGridColumn>
 
-            {Object.entries(fields1).map((item) => {
+            {Object.entries(fields1).map((item,index) => {
               if (item[1] === true) {
                 if (!item[0].includes("Id")) {
                   if (!item[0].includes("Date")) {
@@ -640,6 +481,7 @@ export default function TableView() {
                         onCellValueChanged={(e) => handleChange(e)}
                         field={item[0]}
                         sortable={true}
+                        key={index}
                         filter={true}
                         hide={item[0]}
                         checkboxSelection={false}

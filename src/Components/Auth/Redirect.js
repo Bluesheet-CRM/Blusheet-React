@@ -2,25 +2,19 @@ import React, { useEffect, useState,useContext } from "react";
 import { useLocation,Navigate } from "react-router-dom";
 import { createBrowserHistory } from 'history';
 import axios from "axios";
-import cookie from 'react-cookies'
-import { OpportunityContext } from "../../contexts/OpportunityContext";
-
+import cookie from 'react-cookies';
 
 function Redirect(props) {
-    const {setSalesforceUser,salesforceUser} = useContext(OpportunityContext);
     let history = createBrowserHistory();
-    console.log(setSalesforceUser);
-    console.log(history)
+    const [load,setLoad] = useState(false);
     async function fetchData(code) {
         try {
           const result = await axios({
             method: "get",
             url: `${process.env.REACT_APP_BACKEND_URL}/auth/token/${code}`,
           });
-          cookie.save('access_token', result.data.payload.data.token, { path: '/' });
-          const url = result.data.payload.data.url;
-          cookie.save('instance_url',url, { path: '/' });
-          setSalesforceUser(true);
+          cookie.save('auth_token', result.data.payload.data, { path: '/' });
+          setLoad(true);
         } catch (err) {
           window.alert(err.message);
         }
@@ -34,7 +28,7 @@ function Redirect(props) {
     
   }, []);
   return <div>
-      { salesforceUser && <Navigate push to="/home"/> }
+      { load && <Navigate push to="/home"/> }
   </div>;
 }
 

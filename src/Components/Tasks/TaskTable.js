@@ -99,7 +99,7 @@ function TaskTable ({className, ...rest },props){
     
   const classes = useStyles();
   const [tasks,setTasks] = useState([]);
-  console.log(props)
+
 
   useEffect(()=>{
     const tasks = JSON.parse(localStorage.getItem("tasks"));

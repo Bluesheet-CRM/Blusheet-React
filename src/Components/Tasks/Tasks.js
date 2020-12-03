@@ -16,19 +16,13 @@ import {
   Paper,
   Popper,
   Container,
-  InputAdornment,
-  Box,
-  SvgIcon,
+  Backdrop
 } from "@material-ui/core";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
 import "../Notes/Notes.css";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
-import Statistics from "./Statistics";
-import TaskTable from "./TaskTable";
-import { AuthContext } from "../../contexts/AuthContext";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
-import { Search as SearchIcon } from "react-feather";
 import cookie from 'react-cookies';
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
@@ -48,6 +42,10 @@ const useStylesFacebook = makeStyles((theme) => ({
   circle: {
     strokeLinecap: "round",
   },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  }
 }));
 
 function Notes(props) {
@@ -64,9 +62,9 @@ function Notes(props) {
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
   const oppRef = React.useRef(null);
-  const { currentUser, loading } = useContext(AuthContext);
-  const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
-  console.log(opportunitySkeleton,salesforceUser)
+  const [loading2,setLoading2] = useState(false);
+  const {opportunitySkeleton,salesforceUser,opportunityData} = useContext(OpportunityContext);
+
 
   const handleToggle1 = () => {
     setOpen1((prevOpen) => !prevOpen);
@@ -81,12 +79,10 @@ function Notes(props) {
   };
 
   async function fetchData() {
-
-    let token = cookie.load('access_token');
-    let url = cookie.load('instance_url');
+    setLoading2(true);
+    let token = cookie.load('auth_token');
     const payload = {
       token: token,
-      url:url
     }
     setLoading(true);
     const result = await axios({
@@ -100,11 +96,10 @@ function Notes(props) {
         id.push(value.Id);
         return null;
       });
-      console.log(id);
+
 
       const payload1 = {
         token: token,
-        url:url,
         id:id
       }
       const data = await axios({
@@ -113,28 +108,31 @@ function Notes(props) {
         data: payload1,
       });
       if (data.data.statusCode === 200) {
-        console.log(data.data.payload.data);
+;
         setNotesArray(data.data.payload.data);
         setLoading(false);
+        setLoading2(false);
         setLoad(true);
       }
       setLoad(true);
       setLoading(false);
+      setLoading2(false);
     } else {
       setLoading(false);
-      window.alert("server error");
+      setLoading2(false);
+      window.alert(result.data.payload.msg);
     }
   }
 
   useEffect(() => {
     fetchData();;
     setOpportunity(opportunityData);
+    onbeforeunload = e => "Changes made will not be saved";
   }, []);
 
   const handleSave = async () => {
 
-    let token = cookie.load('access_token');
-    let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
 
     const data = {
       Subject: sub,
@@ -145,7 +143,6 @@ function Notes(props) {
     };
     const payload = {
       token: token,
-      url:url,
       data: data
     }
 
@@ -163,20 +160,18 @@ function Notes(props) {
         fetchData();
       }
     } else {
-      window.alert("server error");
+      window.alert(result.data.payload.msg);
     }
   };
 
   const handleDelete = async (id) => {
-    let token = cookie.load('access_token');
-    let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
 
     if (id === undefined) {
       setNotesArray(notesArray.filter((el) => el.Id !== undefined));
     } else {
       const payload = {
         token: token,
-        url:url,
       }
       const result = await axios({
         method: "post",
@@ -187,7 +182,7 @@ function Notes(props) {
         window.alert("Deleted Successfully");
         setNotesArray(notesArray.filter((el) => el.Id !== id));
       } else {
-        window.alert("server Error");
+        window.alert(result.data.payload.msg);
       }
     }
   };
@@ -200,6 +195,9 @@ function Notes(props) {
         overflowX: "auto",
       }}
     >
+             {loading2 && <Backdrop className={classes.backdrop}  open={loading1} onClick={()=>setLoading2(false)}>
+        <CircularProgress color="inherit" />
+      </Backdrop>}
       <Container maxWidth={false}>
         {/* <Grid container> */}
           {/* <Grid item xl={3} md={3}>
@@ -257,13 +255,38 @@ function Notes(props) {
         <Grid container justify="space-evenly">
           <Grid item sm={4} md={4}>
             <Card
-              style={{ height: "60vh", marginTop: "3rem" }}
+              style={{ height: "60vh", marginTop: "3rem",overflowY:'auto' }}
               variant="outlined"
             >
               <CardContent style={{ padding: "1rem" }}>
                 <h3>All your Tasks</h3>
                 <br />
-                <hr /><MenuList>
+                <hr />
+                {loading1 && (
+                  <div className={classes.root}>
+                    <CircularProgress
+                      variant="determinate"
+                      className={classes.bottom}
+                      size={40}
+                      thickness={4}
+                      {...props}
+                      value={100}
+                    />
+                    <CircularProgress
+                      variant="indeterminate"
+                      disableShrink
+                      className={classes.top}
+                      classes={{
+                        circle: classes.circle,
+                      }}
+                      size={40}
+                      thickness={4}
+                      {...props}
+                    />
+                  </div>
+                )}
+                
+                <MenuList>
                   {load &&
                     notesArray.map((value, index) => {
                       return (
@@ -287,35 +310,13 @@ function Notes(props) {
                         </MenuItem>
                       );
                     })}
-                </MenuList>{loading1 && (
-                  <div className={classes.root}>
-                    <CircularProgress
-                      variant="determinate"
-                      className={classes.bottom}
-                      size={40}
-                      thickness={4}
-                      {...props}
-                      value={100}
-                    />
-                    <CircularProgress
-                      variant="indeterminate"
-                      disableShrink
-                      className={classes.top}
-                      classes={{
-                        circle: classes.circle,
-                      }}
-                      size={40}
-                      thickness={4}
-                      {...props}
-                    />
-                  </div>
-                )}
+                </MenuList>
               </CardContent>
             </Card>
           </Grid>
           <Grid item sm={5} md={5}>
             <>
-              {console.log(index, notesArray)}
+
               <div
                 style={{
                   display: "flex",

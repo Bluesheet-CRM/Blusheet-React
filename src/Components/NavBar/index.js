@@ -91,7 +91,6 @@ const useStyles = makeStyles(() => ({
 const NavBar = ({ onMobileClose, openMobile }) => {
   const classes = useStyles();
   const location = useLocation();
-  console.log(location)
 
   useEffect(() => {
     if (openMobile && onMobileClose) {

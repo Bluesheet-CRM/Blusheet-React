@@ -42,7 +42,7 @@ const App = () => {
       url: `${process.env.REACT_APP_BACKEND_URL}/products`,
     });
     if (result.data.statusCode === 200) {
-      console.log(result.data.payload);
+
       const id = [];
       result.data.payload.data.records.map((value, index) => {
         id.push(value.Id);
@@ -55,7 +55,7 @@ const App = () => {
         data: id,
       });
       if (data.data.statusCode === 200) {
-        console.log(data.data.payload);
+
         setRowData(data.data.payload.data);
         localStorage.setItem(
           "products",
@@ -84,7 +84,7 @@ const App = () => {
           }
           return null;
         });
-        console.log(gettingFields);
+
         setFields1(gettingFields);
         setLoading(false);
         setLoad(true);
@@ -110,7 +110,7 @@ const App = () => {
       newArray.map((value, index) => {
         if (value.Id === e.data.Id) {
           value[field] = e.newValue;
-          console.log(value);
+
           present = true;
         }
         return null;
@@ -124,10 +124,10 @@ const App = () => {
       data[field] = e.newValue;
       let array = editValue;
       array.push(data);
-      console.log(array);
+;
       setEditValue(array);
     }
-    console.log("new", newArray);
+
   };
 
   const handleToggle1 = () => {
@@ -143,7 +143,7 @@ const App = () => {
   };
 
   const handleSave = async () => {
-    console.log(editValue, selected);
+
     let newArray = editValue;
     newArray[0]["OpportunityId"] = selected;
     for (let i = 0; i < rowData.length; i++) {
@@ -153,8 +153,6 @@ const App = () => {
       }
     }
     delete newArray[0].Id;
-    console.log(newArray);
-    window.alert("sdsd");
     const result = await axios({
       method: "post",
       url: `${process.env.REACT_APP_BACKEND_URL}/addProducts`,

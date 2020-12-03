@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, BrowserRouter as Router,Route } from 'react-router-dom';
 import DashboardLayout from "./layouts/DashboardLayout";
 import MainLayout from "./layouts/MainLayout";
 import Pipeline from "./Components/Pipelines";
@@ -37,9 +37,13 @@ const routes = [
       { path: '/home', element: <Homepage /> },
       {path : '/login',element: <Login/> },
       {path : '/signup',element: <Signup /> },
-      { path: '404', element: <NotFoundView /> },
+      { path: '*', element: <Navigate to="/404" /> },
+      { path: '404', element: <NotFoundView /> }
     ]
-  }
+  },
+  
 ];
+
+
 
 export default routes;

@@ -13,6 +13,7 @@ import {
   MenuList,
   Grow,
   Paper,
+  Backdrop,
   Popper
 } from "@material-ui/core";
 import LinkIcon from "@material-ui/icons/Link";
@@ -22,7 +23,6 @@ import "./Notes.css";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
-import { AuthContext } from "../../contexts/AuthContext";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
 import cookie from 'react-cookies';
 
@@ -44,6 +44,10 @@ const useStylesFacebook = makeStyles((theme) => ({
   circle: {
     strokeLinecap: "round",
   },
+  backdrop: {
+    zIndex: theme.zIndex.drawer + 1,
+    color: '#fff',
+  }
 }));
 
 function Notes(props) {
@@ -60,10 +64,10 @@ function Notes(props) {
   const [selected, setSelected] = useState("");
   const [open1, setOpen1] = React.useState(false);
   const oppRef = React.useRef(null);
+  const [loading2,setLoading2] = useState(false);
 
-  const { currentUser, loading } = useContext(AuthContext);
-  const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
-  console.log(opportunitySkeleton,salesforceUser)
+  const {opportunitySkeleton,salesforceUser,opportunityData} = useContext(OpportunityContext);
+
 
   const anchorRef = React.useRef(null);
 
@@ -115,12 +119,11 @@ function Notes(props) {
 
   async function fetchData() {
     setLoading(true);
-    let token = cookie.load('access_token');
-      let url = cookie.load('instance_url');
+    setLoading2(true);
+    let token = cookie.load('auth_token');
 
       const payload = {
         token: token,
-        url:url
       }
     const result = await axios({
       method: "post",
@@ -133,10 +136,9 @@ function Notes(props) {
         id.push(value.Id);
         return null;
       });
-      console.log(id);
+
       const payload1 = {
         token: token,
-        url:url,
         id: id
       }
 
@@ -146,32 +148,31 @@ function Notes(props) {
         data: payload1,
       });
       if (data.data.statusCode === 200) {
-        console.log(data.data.payload.data);
+
         setNotesArray(data.data.payload.data);
-        localStorage.setItem(
-          "notes",
-          JSON.stringify(data.data.payload.data, 2, null)
-        );
 
         setLoading(false);
+        setLoading2(false);
         setLoad(true);
       }
       setLoad(true);
       setLoading(false);
+      setLoading2(false);
     } else {
       setLoading(false);
-      window.alert("server error");
+      setLoading2(false);
+      window.alert(result.data.payload.msg);
     }
   }
 
   useEffect(() => {
     fetchData();
     setOpportunity(opportunityData);
+    onbeforeunload = e => "Changes made will not be saved";
   }, []);
 
   const handleSave = async () => {
-    let token = cookie.load('access_token');
-      let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
     if (selected === "") {
       window.alert("Choose The Opportunity");
     } else {
@@ -182,7 +183,6 @@ function Notes(props) {
       };
       const payload = {
         token: token,
-        url:url,
         data:data
       }
       const result = await axios({
@@ -195,7 +195,7 @@ function Notes(props) {
           fetchData();
         }
       } else {
-        window.alert("server error");
+        window.alert(result.data.payload.msg);
       }
     }
   };
@@ -212,14 +212,12 @@ function Notes(props) {
   };
 
   const handleDelete = async (id) => {
-    let token = cookie.load('access_token');
-      let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
     if (id === undefined) {
       setNotesArray(notesArray.filter((el) => el.Id !== undefined));
     } else {
       const payload = {
         token: token,
-        url:url,
       }
       const result = await axios({
         method: "post",
@@ -230,7 +228,7 @@ function Notes(props) {
         window.alert("Deleted Successfully");
         setNotesArray(notesArray.filter((el) => el.Id !== id));
       } else {
-        window.alert("server Error");
+        window.alert(result.data.payload.msg);
       }
     }
   };
@@ -243,6 +241,9 @@ function Notes(props) {
         height: "auto",
       }}
     >
+       {loading2 && <Backdrop className={classes.backdrop}  open={loading1} onClick={()=>setLoading2(false)}>
+        <CircularProgress color="inherit" />
+      </Backdrop>}
       {load && (
         <Grid container justify="space-evenly">
           <Grid item sm={3} md={3}>
@@ -297,12 +298,35 @@ function Notes(props) {
                 </Grow>
               )}
             </Popper>
-            <Card style={{ height: "60vh" }} variant="outlined">
+            <Card style={{ height: "60vh",overflowY:"auto" }} variant="outlined">
               <CardContent style={{ padding: "1rem" }}>
                 <h3>All your notes</h3>
                 <br />
                 <hr />
-                <MenuList>
+                {loading1   && (
+                  <div className={classes.root}>
+                    <CircularProgress
+                      variant="determinate"
+                      className={classes.bottom}
+                      size={40}
+                      thickness={4}
+                      {...props}
+                      value={100}
+                    />
+                    <CircularProgress
+                      variant="indeterminate"
+                      disableShrink
+                      className={classes.top}
+                      classes={{
+                        circle: classes.circle,
+                      }}
+                      size={40}
+                      thickness={4}
+                      {...props}
+                    />
+                  </div>
+                )}
+                <MenuList >
                   {load &&
                     notesArray.map((value, index) => {
                       return (
@@ -327,35 +351,12 @@ function Notes(props) {
                       );
                     })}
                 </MenuList>
-                {loading1   && (
-                  <div className={classes.root}>
-                    <CircularProgress
-                      variant="determinate"
-                      className={classes.bottom}
-                      size={40}
-                      thickness={4}
-                      {...props}
-                      value={100}
-                    />
-                    <CircularProgress
-                      variant="indeterminate"
-                      disableShrink
-                      className={classes.top}
-                      classes={{
-                        circle: classes.circle,
-                      }}
-                      size={40}
-                      thickness={4}
-                      {...props}
-                    />
-                  </div>
-                )}
+
               </CardContent>
             </Card>
           </Grid>
           <Grid item sm={7} md={7}>
             <>
-              {console.log(index, notesArray)}
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
                 <TextField
                   label="Title"

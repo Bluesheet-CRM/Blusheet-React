@@ -15,9 +15,8 @@ import {
 } from "@material-ui/core";
 import axios from "axios";
 import SearchIcon from "@material-ui/icons/Search";
-import {showNotification} from "../Notification/Notification";
+
 import AddOpportunity from "../OpportunityNew/AddOpportunity"
-import { AuthContext } from "../../contexts/AuthContext";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
 import {Link} from "react-router-dom";
 import cookie from 'react-cookies'
@@ -48,8 +47,7 @@ const useStyles = makeStyles((theme) => ({
 
 function Homepage() {
   const classes = useStyles();
-  const [opportunity, setOpportunity] = useState([]);
-  const [filterArray, setFilterArray] = useState([]);
+;
   const [open1, setOpen1] = useState(false);
   const [value1, setValue1] = useState("");
   const [show, setShow] = useState(false);
@@ -58,31 +56,23 @@ function Homepage() {
   const [stage, setStage] = useState("");
   const [amount, setAmount] = useState(0);
   const [step, setStep] = useState("");
-  const [selectedValue, setSelectedValue] = useState([]);
+  const [ setSelectedValue] = useState([]);
   const [id, setId] = useState("");
   const [sendData, setSendData] = useState([]);
-  const [addOpportunity,setAddOpportunity] = useState(false);
+  const [addOpportunity] = useState(false);
   const [open2, setOpen2] = useState(false);
-  const [skeleton,setSkeleton] = useState({});
-  const [load, setLoad] = useState(false);
+  const [skeleton] = useState({});
+  const [ setLoad] = useState(false);
   const [loading1, setLoading1] = useState(false);
 
-
-
-
-  const { currentUser, loading } = useContext(AuthContext);
   const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
-  console.log(opportunitySkeleton,salesforceUser)
-
   async function fetchData(){
     setLoading1(true);
-      let token = cookie.load('access_token');
-      let url = cookie.load('instance_url');
+      let token = cookie.load('auth_token');
       const payload = {
-        url,
         token
       }
-      console.log(payload)
+
       try{
       let result = await axios({
         url:`${process.env.REACT_APP_BACKEND_URL}/allOpportunities`,
@@ -97,7 +87,6 @@ function Homepage() {
             return null;
           });
           const payload = {
-            url: url,
             token: token,
             id:id
           }
@@ -114,7 +103,7 @@ function Homepage() {
               setLoad(true);
             }
             else{
-              window.alert("Server error")
+              window.alert(data.data.payload.msg)
             }
           }
         }catch(err){
@@ -124,11 +113,24 @@ function Homepage() {
         };
           
         }
-        setLoad(true);
-        setLoading1(false);
+        else{
+          if(result.data.payload.msg === "Session expired or invalid"){
+            window.alert("Session expired or invalid");
+            setLoad(true);
+            setLoading1(false);
+          window.location.href = `${process.env.REACT_APP_BACKEND_URL}/auth/login`;
+          }
+          else{
+            setLoad(true);
+            setLoading1(false);          
+          }
+          }
+        
       }
       else{
         window.alert("no data");
+        setLoading1(false);
+        setLoad(true);
       }
     }catch(err){
       window.alert(err.message)
@@ -137,39 +139,12 @@ function Homepage() {
     };
   }
   useEffect(() => {
-
-    if (false) {
-      axios({
-        method: "get",
-        url: "http://localhost:8080/pipelines",
-        headers: {
-          Authorization: `Bearer ${currentUser.ya}`,
-          "Content-type": "application/json",
-        },
-      })
-        .then((result) => {
-          showNotification("No Opportunities",result.data.data.msg,"success");
-          setSkeleton(result.data.data.opportunitiesSkeleton);
-          setOpen2(true);
-          setAddOpportunity(true);
-          
-          setTimeout(()=>{
-            showNotification("Add Opporunties","Choose required fields from our best recommendation","info");
-
-          },2000)
-        })
-        .catch((err) => {
-          window.alert(err.message);
-        });
-    }
-    else{
       fetchData();
-    }
   }, []);
 
   
 
-  const [open, setOpen] = React.useState(false);
+  const [open] = React.useState(false);
   const anchorRef = React.useRef(null);
 
   // return focus to the button when we transitioned from !open -> open
@@ -203,8 +178,7 @@ function Homepage() {
 
   const handleSave = async () => {
 
-    let token = cookie.load('access_token');
-    let url = cookie.load('instance_url');
+    let token = cookie.load('auth_token');
 
     const data = [];
     data[0] = {};
@@ -217,7 +191,6 @@ function Homepage() {
     
     const payload = {
       token: token,
-      url:url,
       editValue:data
     }
 
@@ -245,8 +218,9 @@ function Homepage() {
       setStage("");
       setDate("");
       setAmount(0);
+      window.alert("Saved successfully");
     } else {
-      window.alert("server error");
+      window.alert(result.data.payload.msg);
     }
   };
   return (

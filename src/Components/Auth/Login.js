@@ -25,7 +25,6 @@ function Login() {
 		app.auth()
 			.signInWithEmailAndPassword(email, password)
 			.then(user => {
-        console.log(user);
         window.location.href = "/home";
         
 			})

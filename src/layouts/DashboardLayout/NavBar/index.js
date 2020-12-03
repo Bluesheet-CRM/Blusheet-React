@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import cookie from 'react-cookies'
+
 import {
   Avatar,
   Box,
@@ -12,17 +14,15 @@ import {
   makeStyles
 } from '@material-ui/core';
 import {
-  AlertCircle as AlertCircleIcon,
   BarChart as BarChartIcon,
   Lock as LockIcon,
-  Settings as SettingsIcon,
   ShoppingBag as ShoppingBagIcon,
   User as UserIcon,
-  UserPlus as UserPlusIcon,
   Users as UsersIcon
 } from 'react-feather';
 import NavItem from './NavItem';
 import base from "../../../utils/base";
+import { setRawCookie } from 'react-cookies';
 const user = {
   avatar: '/static/images/avatars/avatar_6.png',
   jobTitle: 'Senior Developer',
@@ -49,11 +49,6 @@ const items = [
     href: '/app/email',
     icon: UserIcon,
     title: 'Emails'
-  },
-  {
-    href: '/app/settings',
-    icon: SettingsIcon,
-    title: 'Settings'
   },
   {
     href: '/logout',
@@ -90,6 +85,7 @@ const NavBar = ({ onMobileClose, openMobile }) => {
 
   const handleLogout = async()=>{
     await base.app().auth().signOut();
+    cookie.remove("auth_token",{ path: '/' });
 		window.location.href = "/";
   }
 

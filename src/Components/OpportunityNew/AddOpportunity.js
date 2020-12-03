@@ -19,7 +19,7 @@ function AddOpportunity(props) {
     let newfields = Object.assign({}, fields);
     newfields[name] = true;
     setFields(newfields);
-    console.log(fields);
+
   }
   return (
     <div>

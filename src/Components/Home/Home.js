@@ -1,12 +1,11 @@
-import React,{useState} from "react";
+import React,{useState,useEffect} from "react";
 import { Grid, Card, Container, Divider, Button } from "@material-ui/core";
 import WbCloudyIcon from "@material-ui/icons/WbCloudy";
 import {Link} from "react-router-dom";
 
 import image from "../../Assets/home.jpg";
 function Home() {
-  console.log(process.env.REACT_APP_BACKEND_URL);
-  
+
   return (
     <Container>
       <Grid container justify="center" style={{ marginTop: "20vh" }}>
