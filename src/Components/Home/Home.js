@@ -1,10 +1,17 @@
-import React,{useState,useEffect} from "react";
-import { Grid, Card, Container, Divider, Button } from "@material-ui/core";
+import React,{useEffect} from "react";
+import { Grid, Container, Divider, Button } from "@material-ui/core";
 import WbCloudyIcon from "@material-ui/icons/WbCloudy";
 import {Link} from "react-router-dom";
-
+import cookie from 'react-cookies';
 import image from "../../Assets/home.jpg";
 function Home() {
+
+  useEffect(()=>{
+    let token = cookie.load('auth_token');
+    if(token){
+        window.location.href="/home";
+    }
+  },[])
 
   return (
     <Container>

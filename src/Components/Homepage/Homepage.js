@@ -19,13 +19,14 @@ import AddOpportunity from "../OpportunityNew/AddOpportunity"
 import { OpportunityContext } from "../../contexts/OpportunityContext";
 import {Link} from "react-router-dom";
 import cookie from 'react-cookies'
-import { createBrowserHistory } from 'history';
+import "./Homepage.css";
+
 const useStyles = makeStyles((theme) => ({
   root: {
     padding: "2px 4px",
     display: "flex",
     alignItems: "center",
-    width: 200,
+    width: 250,
   },
   input: {
     marginLeft: theme.spacing(1),
@@ -46,7 +47,6 @@ const useStyles = makeStyles((theme) => ({
 
 function Homepage() {
   const classes = useStyles();
-  let history = createBrowserHistory();
 
   const [open1, setOpen1] = useState(false);
   const [value1, setValue1] = useState("");
@@ -56,16 +56,16 @@ function Homepage() {
   const [stage, setStage] = useState("");
   const [amount, setAmount] = useState(0);
   const [step, setStep] = useState("");
-  const [ setSelectedValue] = useState([]);
+  const [ selectedValue,setSelectedValue] = useState([]);
   const [id, setId] = useState("");
   const [sendData, setSendData] = useState([]);
   const [addOpportunity] = useState(false);
   const [open2, setOpen2] = useState(false);
-  const [skeleton] = useState({});
-  const [ setLoad] = useState(false);
+  const [skeleton,setSkeleton] = useState({});
+  const [ load,setLoad] = useState(false);
   const [loading1, setLoading1] = useState(false);
 
-  const {opportunitySkeleton,salesforceUser,opportunityData,setOpportunityData} = useContext(OpportunityContext);
+  const {opportunityData,setOpportunityData} = useContext(OpportunityContext);
   async function fetchData(){
     setLoading1(true);
       let token = cookie.load('auth_token');
@@ -118,7 +118,22 @@ function Homepage() {
             window.alert("Session expired or invalid");
             setLoad(true);
             setLoading1(false);
-          window.location.href = `${process.env.REACT_APP_BACKEND_URL}/auth/login`;
+            const payload = {
+              token
+            }
+            let data = await axios({
+              method: "post",
+              url: `${process.env.REACT_APP_BACKEND_URL}/auth/refresh`,
+              data: payload,
+            })
+            if(data.data.statusCode === 200){
+              cookie.save('auth_token', data.data.payload.data, { path: '/' });
+              fetchData();
+            }
+            else{
+              window.alert(data.data.payload.msg);
+              setLoading1(false); 
+            }
           }
           else{
             setLoad(true);
@@ -238,6 +253,7 @@ function Homepage() {
       <Grid
         container
         justify="space-around"
+        className="links-container"
         style={{
           position: "absolute",
           top: 20,
@@ -246,71 +262,62 @@ function Homepage() {
           zIndex: 2,
         }}
       >
-        <Grid item xs={6} sm={5}>
+        <Grid item xs={12} sm={5}>
           <Grid container justify="flex-start">
             <Grid
               item
-              xs={6}
+              xs={3}
               sm={2}
-              style={{
-                margin: "1rem",
-                fontSize: "0.7rem",
-                zIndex: 2,
-                cursor: "pointer",
-              }}
+              className="links-grid"
             >
-              <Link style={{ textDecoration: "none", color: "#000" }} to="/">
-                <h1>Home</h1>
+              <Link className="nav-links" to="/">
+                <h1 className="home-links">Home</h1>
               </Link>
             </Grid>
             <Grid
               item
-              xs={6}
+              xs={3}
               sm={2}
-              style={{ margin: "1rem", fontSize: "0.7rem" }}
+              className="links-grid"
             >
               <Link
-                style={{ textDecoration: "none", color: "#000" }}
+                class="nav-links"
                 to="/app/tasks"
               >
-                <h1>Tasks</h1>
+                <h1 className="home-links" >Tasks</h1>
               </Link>
             </Grid>
             <Grid
               item
-              xs={6}
+              xs={3}
               sm={2}
-              style={{ margin: "1rem", fontSize: "0.7rem" }}
+              className="links-grid"
             >
               <Link
-                style={{ textDecoration: "none", color: "#000" }}
+                className="nav-links"
                 to="/app/notes"
               >
-                <h1>Notes</h1>
+                <h1 className="home-links" >Notes</h1>
               </Link>
             </Grid>
             <Grid
               item
-              xs={6}
+              xs={3}
               sm={2}
-              style={{
-                margin: "1rem",
-                fontSize: "0.7rem",
-                cursor: "pointer",
-              }}
+              className="links-grid"
             >
               <Link
-                style={{ textDecoration: "none", color: "#000" }}
+                className="nav-links"
                 to="/app/pipelines"
               >
-                <h1>Pipelines</h1>
+                <h1 className="home-links">Pipelines</h1>
               </Link>
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={6} sm={5}>
-          <Grid container justify="flex-end">
-            <Grid item xs={6} sm={5} style={{ margin: "1rem" }}>
+        <Grid item xs={12} sm={5} >
+          <Grid container justify="flex-end" className="search-div">
+            <Grid item xs={8} sm={5} style={{ margin: "1rem" }}>
               <Paper component="form" className={classes.root}>
                 <InputBase
                   className={classes.input}
@@ -333,7 +340,7 @@ function Homepage() {
                 </IconButton>
               </Paper>
             </Grid>
-            <Grid item sc={2}>
+            <Grid item xs={2}>
               <Button
                 variant="contained"
                 color="primary"
@@ -346,46 +353,35 @@ function Homepage() {
         </Grid>
       </Grid>
       <div
-        style={{
-          position: "absolute",
-          top: "30vh",
-          left: "22vw",
-          textAlign: "center",
-        }}
+        className="home-content"
       >
-        <h1 style={{ fontSize: "3rem" }}>Forget Your Admin Work</h1>
+        <h1 class="font-bold">Forget Your Admin Work</h1>
         <br />
-        <p style={{ fontSize: "2rem" }}>
+        <p class="font-semibold">
           Update your salesforce lightning fast
         </p>
         <br />
-        <p style={{ fontSize: "2rem" }}>
+        <p class="font-semibold">
           Automate your sales notes taking process
         </p>
         <br />
-        <p style={{ fontSize: "2.5rem" }}>DESIGNED FOR ACCOUNT EXECUTIVES</p>
+        <p class="font-semibold">DESIGNED FOR ACCOUNT EXECUTIVES</p>
 
         <Modal
           open={open1}
           onClose={() => setOpen1(false)}
           aria-labelledby="simple-modal-title"
           aria-describedby="simple-modal-description"
-          style={{
-            maxHeight: "40vh",
-            minWidth: "30vw",
-            maxWidth: "50vw",
-            marginTop: "5rem",
-            marginLeft: "30vw",
-          }}
+          id="opportunity-modal"
         >
           <Paper
-            style={{ padding: "2rem", minWidth: "30vw", minHeight: "50vh" }}
+          className="instant-modal"
           >
             <TextField
               id="standard-basic"
               label="Search Opportunities"
               value={value1}
-              style={{ width: "20vw", marginLeft: "10vw" }}
+              className="search-text"
               onChange={(e) => setValue1(e.target.value)}
             />
             <IconButton

@@ -24,6 +24,7 @@ import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
 import cookie from 'react-cookies';
+import "./Tasks.css";
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
     position: "relative",
@@ -108,7 +109,6 @@ function Notes(props) {
         data: payload1,
       });
       if (data.data.statusCode === 200) {
-;
         setNotesArray(data.data.payload.data);
         setLoading(false);
         setLoading2(false);
@@ -118,6 +118,33 @@ function Notes(props) {
       setLoading(false);
       setLoading2(false);
     } else {
+      if (result.data.payload.msg === "Session expired or invalid") {
+        window.alert("Session expired or invalid");
+        setLoad(true);
+        setLoading(false);
+        setLoading2(false);
+        const payload = {
+          token,
+        };
+        let data = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/auth/refresh`,
+          data: payload,
+        });
+        if (data.data.statusCode === 200) {
+          cookie.save("auth_token", data.data.payload.data, { path: "/" });
+          fetchData();
+        } else {
+          window.alert(data.data.payload.msg);
+          setLoading(false);
+          setLoading2(false);
+        }
+      } else {
+        setLoad(true);
+        setLoading(false);
+        setLoading2(false);
+      }
+      
       setLoading(false);
       setLoading2(false);
       window.alert(result.data.payload.msg);
@@ -196,11 +223,7 @@ function Notes(props) {
 
   return (
     <div
-      style={{
-        width: "85vw",
-        marginTop: "5vh",
-        overflowX: "auto",
-      }}
+      className="task-container"
     >
              {loading2 && <Backdrop className={classes.backdrop}  open={loading1} onClick={()=>setLoading2(false)}>
         <CircularProgress color="inherit" />
@@ -260,9 +283,9 @@ function Notes(props) {
         {/* {load && <TaskTable data={notesArray} />} */}
         {load && (
         <Grid container justify="space-evenly">
-          <Grid item sm={4} md={4}>
+          <Grid item sm={4} md={4} xs={12}>
             <Card
-              style={{ height: "60vh", marginTop: "3rem",overflowY:'auto' }}
+             className="tasks-title"
               variant="outlined"
             >
               <CardContent style={{ padding: "1rem" }}>
@@ -321,7 +344,7 @@ function Notes(props) {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item sm={5} md={5}>
+          <Grid item sm={5} md={5} xs={12}>
             <>
 
               <div

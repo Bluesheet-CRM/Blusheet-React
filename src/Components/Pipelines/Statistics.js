@@ -47,12 +47,14 @@ const Statistics = ({ className,count,name, ...rest }) => {
               color="textSecondary"
               gutterBottom
               variant="h2"
+              className="stat-text"
             >
               {count || 0}
             </Typography>
             <Typography
               color="textPrimary"
               variant="p"
+              className="stat-text"
             >
               {name || null}
             </Typography>

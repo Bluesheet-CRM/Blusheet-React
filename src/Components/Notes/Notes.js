@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import CKEditor from "@ckeditor/ckeditor5-react";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import {
@@ -14,7 +14,7 @@ import {
   Grow,
   Paper,
   Backdrop,
-  Popper
+  Popper,
 } from "@material-ui/core";
 import LinkIcon from "@material-ui/icons/Link";
 import axios from "axios";
@@ -24,7 +24,7 @@ import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
-import cookie from 'react-cookies';
+import cookie from "react-cookies";
 
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
@@ -46,8 +46,8 @@ const useStylesFacebook = makeStyles((theme) => ({
   },
   backdrop: {
     zIndex: theme.zIndex.drawer + 1,
-    color: '#fff',
-  }
+    color: "#fff",
+  },
 }));
 
 function Notes(props) {
@@ -64,10 +64,11 @@ function Notes(props) {
   const [selected, setSelected] = useState("");
   const [open1, setOpen1] = React.useState(false);
   const oppRef = React.useRef(null);
-  const [loading2,setLoading2] = useState(false);
+  const [loading2, setLoading2] = useState(false);
 
-  const {opportunitySkeleton,salesforceUser,opportunityData} = useContext(OpportunityContext);
-
+  const { opportunityData } = useContext(
+    OpportunityContext
+  );
 
   const anchorRef = React.useRef(null);
 
@@ -120,15 +121,15 @@ function Notes(props) {
   async function fetchData() {
     setLoading(true);
     setLoading2(true);
-    let token = cookie.load('auth_token');
+    let token = cookie.load("auth_token");
 
-      const payload = {
-        token: token,
-      }
+    const payload = {
+      token: token,
+    };
     const result = await axios({
       method: "post",
       url: `${process.env.REACT_APP_BACKEND_URL}/allNotes`,
-      data: payload
+      data: payload,
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -139,8 +140,8 @@ function Notes(props) {
 
       const payload1 = {
         token: token,
-        id: id
-      }
+        id: id,
+      };
 
       const data = await axios({
         method: "post",
@@ -148,7 +149,6 @@ function Notes(props) {
         data: payload1,
       });
       if (data.data.statusCode === 200) {
-
         setNotesArray(data.data.payload.data);
 
         setLoading(false);
@@ -159,6 +159,33 @@ function Notes(props) {
       setLoading(false);
       setLoading2(false);
     } else {
+      if (result.data.payload.msg === "Session expired or invalid") {
+        window.alert("Session expired or invalid");
+        setLoad(true);
+        setLoading(false);
+        setLoading2(false);
+        const payload = {
+          token,
+        };
+        let data = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/auth/refresh`,
+          data: payload,
+        });
+        if (data.data.statusCode === 200) {
+          cookie.save("auth_token", data.data.payload.data, { path: "/" });
+          fetchData();
+        } else {
+          window.alert(data.data.payload.msg);
+          setLoading(false);
+          setLoading2(false);
+        }
+      } else {
+        setLoad(true);
+        setLoading(false);
+        setLoading2(false);
+      }
+
       setLoading(false);
       setLoading2(false);
       window.alert(result.data.payload.msg);
@@ -166,20 +193,19 @@ function Notes(props) {
   }
 
   useEffect(() => {
-    let token = cookie.load('auth_token');
-    if(token === null | token === undefined){
-        window.location.href="/";
-    }
-    else{
+    let token = cookie.load("auth_token");
+    if ((token === null) | (token === undefined)) {
+      window.location.href = "/";
+    } else {
       fetchData();
-     setOpportunity(opportunityData);
+      setOpportunity(opportunityData);
     }
-    
-    onbeforeunload = e => "Changes made will not be saved";
+
+    onbeforeunload = (e) => "Changes made will not be saved";
   }, []);
 
   const handleSave = async () => {
-    let token = cookie.load('auth_token');
+    let token = cookie.load("auth_token");
     if (selected === "") {
       window.alert("Choose The Opportunity");
     } else {
@@ -190,8 +216,8 @@ function Notes(props) {
       };
       const payload = {
         token: token,
-        data:data
-      }
+        data: data,
+      };
       const result = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/addNotes`,
@@ -219,17 +245,17 @@ function Notes(props) {
   };
 
   const handleDelete = async (id) => {
-    let token = cookie.load('auth_token');
+    let token = cookie.load("auth_token");
     if (id === undefined) {
       setNotesArray(notesArray.filter((el) => el.Id !== undefined));
     } else {
       const payload = {
         token: token,
-      }
+      };
       const result = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/deleteNotes/${id}`,
-        data: payload
+        data: payload,
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");
@@ -244,16 +270,22 @@ function Notes(props) {
     <div
       style={{
         width: "90%",
-        marginTop:"5vh",
+        marginTop: "5vh",
         height: "auto",
       }}
     >
-       {loading2 && <Backdrop className={classes.backdrop}  open={loading1} onClick={()=>setLoading2(false)}>
-        <CircularProgress color="inherit" />
-      </Backdrop>}
+      {loading2 && (
+        <Backdrop
+          className={classes.backdrop}
+          open={loading1}
+          onClick={() => setLoading2(false)}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
       {load && (
         <Grid container justify="space-evenly">
-          <Grid item sm={3} md={3}>
+          <Grid item sm={3} md={3} xs={12} className="notes-grid">
             <Button
               style={{ marginBottom: "1rem" }}
               variant="contained"
@@ -305,12 +337,15 @@ function Notes(props) {
                 </Grow>
               )}
             </Popper>
-            <Card style={{ height: "60vh",overflowY:"auto" }} variant="outlined">
+            <Card
+              style={{ height: "60vh", overflowY: "auto" }}
+              variant="outlined"
+            >
               <CardContent style={{ padding: "1rem" }}>
                 <h3>All your notes</h3>
                 <br />
                 <hr />
-                {loading1   && (
+                {loading1 && (
                   <div className={classes.root}>
                     <CircularProgress
                       variant="determinate"
@@ -333,7 +368,7 @@ function Notes(props) {
                     />
                   </div>
                 )}
-                <MenuList >
+                <MenuList>
                   {load &&
                     notesArray.map((value, index) => {
                       return (
@@ -358,11 +393,10 @@ function Notes(props) {
                       );
                     })}
                 </MenuList>
-
               </CardContent>
             </Card>
           </Grid>
-          <Grid item sm={7} md={7}>
+          <Grid item sm={7} md={7} xs={12} className="notes-grid">
             <>
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
                 <TextField
@@ -376,14 +410,7 @@ function Notes(props) {
                   variant="outlined"
                   size="small"
                   disabled
-                  style={{
-                    width: "20vw",
-                    marginRight: "1rem",
-                    background: "#fff",
-                    height: "2.5rem",
-                    borderRadius: "5px",
-                    marginBottom: "1rem",
-                  }}
+                  className="notes-field"
                 />
                 <Button
                   style={{ marginBottom: "1rem", marginRight: "1rem" }}

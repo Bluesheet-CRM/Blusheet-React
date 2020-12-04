@@ -309,11 +309,6 @@ export default function TableView() {
       {load && (
         <div
           id="myGrid"
-          style={{
-            height: "65vh",
-            width:"95%",
-            marginLeft:"2rem"
-          }}
           className="ag-theme-alpine"
         >
           {save && (

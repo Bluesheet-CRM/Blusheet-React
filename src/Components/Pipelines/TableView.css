@@ -55,4 +55,26 @@
   margin-left: 50vw;
   margin-top: 40vh;
 }
+
+#myGrid {
+  height: 65vh;
+  width: 95%;
+  margin-left: 2rem;
+}
+
+@media only screen and (max-width: 600px) {
+  .statistics-card {
+    height: 5rem !important;
+  }
+  .stat-text {
+    font-size: 0.8rem;
+    margin: 0.5rem;
+    margin-bottom: 0 !important;
+  }
+  #myGrid {
+    height: 65vh;
+    width: 95%;
+    margin-left: 0.5rem;
+  }
+}
 /*# sourceMappingURL=TableView.css.map */

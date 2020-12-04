@@ -1,0 +1,25 @@
+.task-container {
+  width: 85vw;
+  margin-top: 5vh;
+  overflow-x: auto;
+}
+
+.task-container .tasks-title {
+  height: 60vh;
+  margin-top: 3rem;
+  overflow-y: auto;
+}
+
+@media only screen and (max-width: 600px) {
+  .task-container {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  .task-container .tasks-title {
+    height: 60vh;
+    margin-top: 1rem;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+}
+/*# sourceMappingURL=Tasks.css.map */

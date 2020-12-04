@@ -25,4 +25,26 @@
   display: block;
   color: #3f51b5;
 }
+
+.notes-grid .notes-field {
+  width: 20vw;
+  margin-right: 1rem;
+  background: #fff;
+  height: 2.5rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+}
+
+@media only screen and (max-width: 600px) {
+  .notes-grid {
+    margin-left: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .notes-grid .notes-field {
+    width: 55vw;
+    margin-right: 1rem;
+    background: #fff;
+    border-radius: 5px;
+  }
+}
 /*# sourceMappingURL=Notes.css.map */

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import cookie from 'react-cookies'
+
 
 import {
   Avatar,
@@ -25,8 +25,7 @@ import base from "../../../utils/base";
 
 const user = {
   avatar: '/static/images/avatars/avatar_6.png',
-  jobTitle: 'Senior Developer',
-  name: 'Katarina Smith'
+  jobTitle: 'Welcome User !',
 };
 
 const items = [
@@ -72,7 +71,7 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const NavBar = ({ onMobileClose, openMobile }) => {
+const NavBar = ({ onMobileClose, openMobile,setMobileNavOpen }) => {
   const classes = useStyles();
   const location = useLocation();
 
@@ -85,7 +84,6 @@ const NavBar = ({ onMobileClose, openMobile }) => {
 
   const handleLogout = async()=>{
     await base.app().auth().signOut();
-    cookie.remove("auth_token",{ path: '/' });
 		window.location.href = "/";
   }
 
@@ -105,7 +103,7 @@ const NavBar = ({ onMobileClose, openMobile }) => {
           className={classes.avatar}
           component={RouterLink}
           src={user.avatar}
-          to="/app/account"
+          to="/home"
         />
         <Typography
           className={classes.name}
@@ -146,8 +144,9 @@ const NavBar = ({ onMobileClose, openMobile }) => {
   return (
     <>
       <Hidden lgUp>
+      
         <Drawer
-          anchor="left"
+          anchor="right"
           classes={{ paper: classes.mobileDrawer }}
           onClose={onMobileClose}
           open={openMobile}

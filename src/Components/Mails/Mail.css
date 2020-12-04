@@ -1,0 +1,26 @@
+.mail-title {
+  height: 60vh;
+  overflow-y: auto;
+}
+
+.mail-text {
+  width: 40vw;
+}
+
+.link-btn {
+  margin: 1rem;
+}
+
+@media only screen and (max-width: 600px) {
+  .mail-title {
+    margin: 1rem;
+    width: 100%;
+  }
+  .mail-text {
+    width: 100%;
+  }
+  .link-btn {
+    margin-top: 1rem !important;
+  }
+}
+/*# sourceMappingURL=Mail.css.map */

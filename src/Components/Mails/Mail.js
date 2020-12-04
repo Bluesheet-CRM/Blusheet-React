@@ -19,7 +19,8 @@ import LinkIcon from "@material-ui/icons/Link";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
-import { createBrowserHistory } from 'history';
+
+import "./Mail.css";
 import cookie from 'react-cookies';
 const useStyles = makeStyles((theme) => ({
   backdrop: {
@@ -29,7 +30,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 function Mail() {
   const classes = useStyles();
-  let history = createBrowserHistory();
   const [toAddress, setToAddress] = useState("");
 
   const [subject, setSubject] = useState("");
@@ -44,7 +44,7 @@ function Mail() {
   const [ setIndex] = useState(0);
 
   
-  const {opportunitySkeleton,salesforceUser,opportunityData} = useContext(OpportunityContext);
+  const {opportunityData} = useContext(OpportunityContext);
 
 
 
@@ -216,8 +216,8 @@ function Mail() {
         <CircularProgress color="inherit" />
       </Backdrop>}
       <Grid container justify="center">
-        <Grid item xl={4} md={4}>
-          <Card style={{ height: "60vh",overflowY:"auto" }} variant="outlined">
+        <Grid item xl={4} md={4} xs={12}>
+          <Card className="mail-title" variant="outlined">
             <CardContent style={{ padding: "1rem" }}>
               <h3>All your Emails</h3>
               <br />
@@ -249,7 +249,7 @@ function Mail() {
           </Card>
         </Grid>
 
-        <Grid item xl={7} md={7}>
+        <Grid item xl={7} md={7} xs={12}>
           <div style={{ marginLeft: "5vw" }}>
             <h4>Send Email</h4>
             <br />
@@ -260,7 +260,7 @@ function Mail() {
               value={toAddress}
               onChange={(e) => setToAddress(e.target.value)}
               variant="outlined"
-              style={{ width: "40vw" }}
+              className="mail-text"
             />
             <br />
             <br />
@@ -269,14 +269,14 @@ function Mail() {
               id="outlined-basic"
               label="Subject"
               variant="outlined"
-              style={{ width: "40vw" }}
+              className="mail-text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
             />
             <br />
             <br />
             <TextField
-              style={{ width: "40vw" }}
+              className="mail-text"
               id="outlined-multiline-static"
               label="Content"
               multiline
@@ -292,7 +292,7 @@ function Mail() {
             </Button>
 
             <Button
-              style={{ margin: "1rem" }}
+              className="link-btn"
               aria-haspopup="true"
               variant="contained"
               color="secondary"
