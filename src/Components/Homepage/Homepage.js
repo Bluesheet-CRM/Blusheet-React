@@ -11,15 +11,18 @@ import {
   MenuItem,
   MenuList,
   Backdrop,
-  CircularProgress 
+  CircularProgress,
 } from "@material-ui/core";
 import axios from "axios";
 import SearchIcon from "@material-ui/icons/Search";
-import AddOpportunity from "../OpportunityNew/AddOpportunity"
+import AddOpportunity from "../OpportunityNew/AddOpportunity";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
-import {Link} from "react-router-dom";
-import cookie from 'react-cookies'
+import { AuthContext } from "../../contexts/AuthContext";
+import { Link } from "react-router-dom";
+import cookie from "react-cookies";
+import {useNavigate} from "react-router-dom";
 import "./Homepage.css";
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -41,8 +44,8 @@ const useStyles = makeStyles((theme) => ({
   },
   backdrop: {
     zIndex: theme.zIndex.drawer + 1,
-    color: '#fff',
-  }
+    color: "#fff",
+  },
 }));
 
 function Homepage() {
@@ -56,30 +59,32 @@ function Homepage() {
   const [stage, setStage] = useState("");
   const [amount, setAmount] = useState(0);
   const [step, setStep] = useState("");
-  const [ selectedValue,setSelectedValue] = useState([]);
+  const [selectedValue, setSelectedValue] = useState([]);
   const [id, setId] = useState("");
   const [sendData, setSendData] = useState([]);
-  const [addOpportunity] = useState(false);
+  const [addOpportunity,setAddOpportunity] = useState(false);
   const [open2, setOpen2] = useState(false);
-  const [skeleton,setSkeleton] = useState({});
-  const [ load,setLoad] = useState(false);
+  const [skeleton, setSkeleton] = useState({});
+  const [load, setLoad] = useState(false);
   const [loading1, setLoading1] = useState(false);
+  const [showModal,setShowModal] = useState(false);
 
-  const {opportunityData,setOpportunityData} = useContext(OpportunityContext);
-  async function fetchData(){
+  let navigate = useNavigate();
+
+  async function fetchData() {
     setLoading1(true);
-      let token = cookie.load('auth_token');
-      const payload = {
-        token
-      }
+    let token = cookie.load("auth_token");
+    const payload = {
+      token,
+    };
 
-      try{
+    try {
       let result = await axios({
-        url:`${process.env.REACT_APP_BACKEND_URL}/allOpportunities`,
-        method:"post",
-        data:payload
-      })
-      if(result){
+        url: `${process.env.REACT_APP_BACKEND_URL}/allOpportunities`,
+        method: "post",
+        data: payload,
+      });
+      if (result) {
         if (result.data.statusCode === 200) {
           const id = [];
           result.data.payload.data.records.map((value, index) => {
@@ -88,82 +93,120 @@ function Homepage() {
           });
           const payload = {
             token: token,
-            id:id
-          }
-          try{
-          let data = await axios({
-            method: "post",
-            url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleRecords`,
-            data: payload,
-          })
-          if(data){
-            if (data.data.statusCode === 200) {
-              setOpportunityData(data.data.payload.data);
-              setLoading1(false);
-              setLoad(true);
+            id: id,
+          };
+          try {
+            let data = await axios({
+              method: "post",
+              url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleRecords`,
+              data: payload,
+            });
+            if (data) {
+              if (data.data.statusCode === 200) {
+                setOpportunityData(data.data.payload.data);
+                setLoading1(false);
+                setLoad(true);
+              } else {
+                window.alert(data.data.payload.msg);
+              }
             }
-            else{
-              window.alert(data.data.payload.msg)
-            }
+          } catch (err) {
+            window.alert(err.message);
+            setLoading1(false);
+            setLoad(true);
           }
-        }catch(err){
-          window.alert(err.message)
-          setLoading1(false);
-          setLoad(true);
-        };
-          
-        }
-        else{
-          if(result.data.payload.msg === "Session expired or invalid"){
+        } else {
+          if (result.data.payload.msg === "Session expired or invalid") {
             window.alert("Session expired or invalid");
             setLoad(true);
             setLoading1(false);
             const payload = {
-              token
-            }
+              token,
+            };
             let data = await axios({
               method: "post",
               url: `${process.env.REACT_APP_BACKEND_URL}/auth/refresh`,
               data: payload,
-            })
-            if(data.data.statusCode === 200){
-              cookie.save('auth_token', data.data.payload.data, { path: '/' });
+            });
+            if (data.data.statusCode === 200) {
+              cookie.save("auth_token", data.data.payload.data, { path: "/" });
               fetchData();
-            }
-            else{
+            } else {
               window.alert(data.data.payload.msg);
-              setLoading1(false); 
+              setLoading1(false);
             }
-          }
-          else{
+          } else {
             setLoad(true);
-            setLoading1(false);          
+            setLoading1(false);
           }
-          }
-        
-      }
-      else{
+        }
+      } else {
         window.alert("no data");
         setLoading1(false);
         setLoad(true);
       }
-    }catch(err){
-      window.alert(err.message)
+    } catch (err) {
+      window.alert(err.message);
       setLoading1(false);
       setLoad(true);
-    };
+    }
   }
+
+  async function fetchOpportunityData(){
+    axios({
+      method: "get",
+      url: `${process.env.REACT_APP_BACKEND_URL}/pipelines`,
+      headers: {
+        Authorization: `Bearer ${currentUser.ya}`,
+        "Content-type": "application/json",
+      },
+    })
+    .then((result)=>{
+      if(result.data.data.msg === "No data found!"){
+        window.alert("Your opportunity data seems to empty, add one!");
+        setSkeleton(result.data.data.opportunitiesSkeleton);
+        setAddOpportunity(true);
+        setOpen2(true);
+      }
+      else{
+        window.alert(result.data.data.msg);
+        setOpportunityData(result.data.data.opportunities)
+      }
+    })
+    .catch((err)=>{
+      window.alert(err.message);
+    })
+  }
+
+  const { loadingAuth, currentUser,setAuth,auth } = useContext(AuthContext);
+  const {opportunitySkeleton,opportunityData,setOpportunityData,setOpportunitySkeleton} = useContext(OpportunityContext);
+
   useEffect(() => {
-    let token = cookie.load('auth_token');
-    if(token === null | token === undefined){
-        window.location.href="/";
+    
+    if (loadingAuth && currentUser === null) {
+      
+      let token = cookie.load("auth_token");
+      if ((token === null) | (token === undefined)) {
+        window.location.href = "/";
+      } else {
+
+        fetchData();
+      }
     }
     else{
-      fetchData();
-    }
-  }, []);
+      if(loadingAuth){
+        if(currentUser !== null){
+          fetchOpportunityData();
+        }
+        else{
+          navigate("/");
+        }
 
-  
+      }
+
+    }
+  }, [loadingAuth]);
+
 
   const [open] = React.useState(false);
   const anchorRef = React.useRef(null);
@@ -198,8 +241,7 @@ function Homepage() {
   };
 
   const handleSave = async () => {
-
-    let token = cookie.load('auth_token');
+    let token = cookie.load("auth_token");
 
     const data = [];
     data[0] = {};
@@ -209,12 +251,11 @@ function Homepage() {
     data[0].CloseDate = new Date(date);
     data[0].Amount = amount;
     data[0].NextStep = step;
-    
+
     const payload = {
       token: token,
-      editValue:data
-    }
-
+      editValue: data,
+    };
 
     const result = await axios({
       method: "post",
@@ -246,10 +287,18 @@ function Homepage() {
   };
   return (
     <>
-    {loading1 && <Backdrop className={classes.backdrop}  open={loading1} onClick={()=>setLoading1(false)}>
-        <CircularProgress color="inherit" />
-      </Backdrop>}
-    {addOpportunity && <AddOpportunity open={open2} handleClose={setOpen2} fields={skeleton} />}
+      {loading1 && (
+        <Backdrop
+          className={classes.backdrop}
+          open={loading1}
+          onClick={() => setLoading1(false)}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
+      {addOpportunity && (
+        <AddOpportunity open={open2} handleClose={setOpen2} fields={skeleton} />
+      )}
       <Grid
         container
         justify="space-around"
@@ -264,58 +313,29 @@ function Homepage() {
       >
         <Grid item xs={12} sm={5}>
           <Grid container justify="flex-start">
-            <Grid
-              item
-              xs={3}
-              sm={2}
-              className="links-grid"
-            >
+            <Grid item xs={3} sm={2} className="links-grid">
               <Link className="nav-links" to="/">
                 <h1 className="home-links">Home</h1>
               </Link>
             </Grid>
-            <Grid
-              item
-              xs={3}
-              sm={2}
-              className="links-grid"
-            >
-              <Link
-                class="nav-links"
-                to="/app/tasks"
-              >
-                <h1 className="home-links" >Tasks</h1>
+            <Grid item xs={3} sm={2} className="links-grid">
+              <Link class="nav-links" to="/app/tasks">
+                <h1 className="home-links">Tasks</h1>
               </Link>
             </Grid>
-            <Grid
-              item
-              xs={3}
-              sm={2}
-              className="links-grid"
-            >
-              <Link
-                className="nav-links"
-                to="/app/notes"
-              >
-                <h1 className="home-links" >Notes</h1>
+            <Grid item xs={3} sm={2} className="links-grid">
+              <Link className="nav-links" to="/app/notes">
+                <h1 className="home-links">Notes</h1>
               </Link>
             </Grid>
-            <Grid
-              item
-              xs={3}
-              sm={2}
-              className="links-grid"
-            >
-              <Link
-                className="nav-links"
-                to="/app/pipelines"
-              >
+            <Grid item xs={3} sm={2} className="links-grid">
+              <Link className="nav-links" to="/app/pipelines">
                 <h1 className="home-links">Pipelines</h1>
               </Link>
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={12} sm={5} >
+        <Grid item xs={12} sm={5}>
           <Grid container justify="flex-end" className="search-div">
             <Grid item xs={8} sm={5} style={{ margin: "1rem" }}>
               <Paper component="form" className={classes.root}>
@@ -352,18 +372,12 @@ function Homepage() {
           </Grid>
         </Grid>
       </Grid>
-      <div
-        className="home-content"
-      >
+      <div className="home-content">
         <h1 class="font-bold">Forget Your Admin Work</h1>
         <br />
-        <p class="font-semibold">
-          Update your salesforce lightning fast
-        </p>
+        <p class="font-semibold">Update your salesforce lightning fast</p>
         <br />
-        <p class="font-semibold">
-          Automate your sales notes taking process
-        </p>
+        <p class="font-semibold">Automate your sales notes taking process</p>
         <br />
         <p class="font-semibold">DESIGNED FOR ACCOUNT EXECUTIVES</p>
 
@@ -374,9 +388,7 @@ function Homepage() {
           aria-describedby="simple-modal-description"
           id="opportunity-modal"
         >
-          <Paper
-          className="instant-modal"
-          >
+          <Paper className="instant-modal">
             <TextField
               id="standard-basic"
               label="Search Opportunities"

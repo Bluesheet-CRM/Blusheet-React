@@ -13,12 +13,12 @@ $primary-color: #ccc;
 #myGrid{
     height: 65vh;
     width:95%;
-    margin-left:2rem;
+    margin-left:1rem;
 }
 @media only screen and (max-width: 600px) {
 
   .statistics-card{
-    height: 5rem !important;
+    height: 1rem !important;
   }
 
   .stat-text{

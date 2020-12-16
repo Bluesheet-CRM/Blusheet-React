@@ -4,27 +4,28 @@ import Page from "../Page";
 import TableView from "./TableView";
 import Statistics from "./Statistics";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
+import {AuthContext} from "../../contexts/AuthContext";
 import cookie from "react-cookies";
 import  "./TableView.css";
 const useStyles = makeStyles((theme) => ({
   root: {
     backgroundColor: theme.palette.background.dark,
-    minHeight: "100%",
-    paddingBottom: theme.spacing(3),
-    paddingTop: theme.spacing(3),
+    maxHeight: "100%",
   },
 }));
 
 const Pipeline = () => {
   const classes = useStyles();
-  const { opportunityData } = useContext(OpportunityContext);
+  const { opportunityData,opportunitySkeleton,setOpportunityData } = useContext(OpportunityContext);
+  const { loadingAuth, currentUser,setAuth,auth } = useContext(AuthContext);
   const [closed, setClosed] = useState(0);
   const [won, setWon] = useState(0);
   const [month, setMonth] = useState(0);
 
   useEffect(() => {
     let token = cookie.load("auth_token");
-    if ((token === null) | (token === undefined)) {
+    if(loadingAuth && currentUser === null){
+    if (((token === null) | (token === undefined)) && !auth ) {
       window.location.href = "/";
     } else {
       let temp1 = 0;
@@ -48,14 +49,16 @@ const Pipeline = () => {
       setWon(temp2);
       setMonth(temp3);
     }
+  }
 
     onbeforeunload = (e) => "Changes made will not be saved";
-  });
+  },[loadingAuth]);
+
 
   return (
     <Page className={classes.root} title="Dashboard">
       <Container maxWidth={false}>
-        <Grid container>
+        <Grid container spacing={1}>
           <Grid item xl={3} md={3} xs={6} >
             <Statistics
             className="statistics-card"

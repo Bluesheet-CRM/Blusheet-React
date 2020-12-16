@@ -13,7 +13,7 @@ import { OpportunityContext } from "../../contexts/OpportunityContext";
 
 function AddOpportunity(props) {
   const [fields, setFields] = useState({});
-  const {opportunitySkeleton,setOpportunitySkeleton} = useContext(OpportunityContext);
+  const {opportunitySkeleton,setOpportunitySkeleton,setOpportunityData} = useContext(OpportunityContext);
   
   function handleChoose(name) {
     let newfields = Object.assign({}, fields);
@@ -63,14 +63,24 @@ function AddOpportunity(props) {
         <DialogActions>
           <Button onClick={() => {
             setOpportunitySkeleton(fields);
-            props.handleClose(false)
-          }} color="primary">
+            let newArray = [];
+            let newSkeleton = {};
+            for (const [key, value] of Object.entries(fields)) {
+              newSkeleton[key] = `add ${key}`;
+            }
+            newArray[0] = newSkeleton;
+            console.log(newArray);
+            setOpportunityData(newArray);
+        
+            props.handleClose(false);
+          }} color="primary" variant="contained">
             Save
           </Button>
           <Button
             onClick={() => props.handleClose(false)}
-            color="primary"
-            autoFocus
+            color="default"
+            variant="contained"
+            
           >
             Cancel
           </Button>

@@ -8,18 +8,20 @@ import {
   CardContent,
   TextField,
 } from "@material-ui/core";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import {createBrowserHistory} from "history";
 import signup from "../../Assets/signup.jpg";
 import app from "../../utils/base";
 import google from "../../Assets/google_logo.svg";
 import axios from "axios";
-function Signup() {
+function Signup(props) {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  let history = createBrowserHistory();
 
   const handleEmailSignUp = () => {
     setError("");
@@ -45,14 +47,25 @@ function Signup() {
                   email: email,
                   phoneNumber: phone,
                   salesforceUser: false,
-                }),
-              });
+                })
+
+              })
+              .then((data)=>{
+                if(data.data.statusCode === 200){
+                  window.alert("Signed in Successfully");
+                  window.location.href="/home";
+                }
+              })
+              .catch((err)=>{
+                window.alert(err.message);
+              })
             } catch (err) {
               window.alert(err.message);
             }
           });
       })
       .catch((e) => {
+        window.alert(e.message);
         setError(e.message);
         setIsLoading(false);
       });
@@ -83,7 +96,10 @@ function Signup() {
               }),
             })
               .catch((err) => window.alert(err.message));
-          });
+          })
+          .catch((err)=>{
+            window.alert(err.message);
+          })
           window.location.href="/home"
       })
       .catch((e) => {

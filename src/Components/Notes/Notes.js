@@ -24,7 +24,9 @@ import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
+import {AuthContext} from "../../contexts/AuthContext";
 import cookie from "react-cookies";
+import {useNavigate} from "react-router-dom";
 
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
@@ -65,17 +67,22 @@ function Notes(props) {
   const [open1, setOpen1] = React.useState(false);
   const oppRef = React.useRef(null);
   const [loading2, setLoading2] = useState(false);
+  const [change,setChange] = useState(false);
 
   const { opportunityData } = useContext(
     OpportunityContext
   );
+  let navigate = useNavigate();
+  const { loadingAuth, currentUser,setAuth,auth } = useContext(AuthContext);
 
   const anchorRef = React.useRef(null);
 
   //for adding new note
   const handleToggle = () => {
     setAdd(true);
+    setTitle("");
     setOpen((prevOpen) => !prevOpen);
+
   };
 
   const handleClose = (event) => {
@@ -105,7 +112,8 @@ function Notes(props) {
     if (oppRef.current && oppRef.current.contains(event.target)) {
       return;
     }
-    setSelected(opportunity[index].Id);
+    window.alert(index,opportunityData[index].Id)
+    setSelected(opportunityData[index].Id);
     setOpen1(false);
   };
 
@@ -192,20 +200,79 @@ function Notes(props) {
     }
   }
 
+  async function fetchNotesData(){
+    setLoading(true);
+    setLoading2(true);
+
+    const result = await axios({
+      method: "get",
+      url: `${process.env.REACT_APP_BACKEND_URL}/sa/notes`,
+      headers: {
+        Authorization: `Bearer ${currentUser.ya}`,
+        "Content-type": "application/json",
+      },
+    });
+    if(result.data.statusCode === 200){
+      if(result.data.data.msg === "No data found!"){
+        window.alert("Your notes data seems to empty, add one!");
+        let sampleNotesArray = []
+        let sampleNote = {
+          Title:"Sample",
+          Body:"Start Editing"
+        }
+        sampleNotesArray.push(sampleNote);
+        setAdd(true);
+        setTitle("sample")
+        setNotesArray(sampleNotesArray);
+        setLoading(false);
+    setLoading2(false);
+    setLoad(true);
+    }
+    else{
+      setNotesArray(result.data.data.notes);
+      setLoading(false);
+      setLoading2(false);
+      setLoad(true);
+    }
+  }
+  else{
+    window.alert(result.data.msg);
+    setLoading(false);
+      setLoading2(false);
+      setLoad(true);
+  }
+
+  }
+
   useEffect(() => {
     let token = cookie.load("auth_token");
+    if(loadingAuth && currentUser === null){
     if ((token === null) | (token === undefined)) {
       window.location.href = "/";
     } else {
       fetchData();
       setOpportunity(opportunityData);
     }
+  }
+  else{
+    if(loadingAuth){
+      if(currentUser !== null){
+        fetchNotesData();
+      }
+      else{
+        navigate("/");
+      }
+
+    }
+    
+  }
 
     onbeforeunload = (e) => "Changes made will not be saved";
-  }, []);
+  }, [loadingAuth]);
 
   const handleSave = async () => {
-    let token = cookie.load("auth_token");
+    if(currentUser === null){
+      let token = cookie.load("auth_token");
     if (selected === "") {
       window.alert("Choose The Opportunity");
     } else {
@@ -231,6 +298,31 @@ function Notes(props) {
         window.alert(result.data.payload.msg);
       }
     }
+    }
+    else{
+      const payload = {
+        Title: notesArray[index].Title,
+        Body: note,
+        ParentId: selected,
+      };
+      const result = await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_BACKEND_URL}/sa/addNotes`,
+        data: payload,
+        headers: {
+          Authorization: `Bearer ${currentUser.ya}`,
+          "Content-type": "application/json",
+        },
+      });
+      if (result.data.statusCode === 200) {
+          window.alert(result.data.data.msg);
+          fetchNotesData();
+      }
+      else{
+        window.alert(result.data.data.msg);
+      }
+    }
+    
   };
 
   const handleAdd = () => {
@@ -245,7 +337,8 @@ function Notes(props) {
   };
 
   const handleDelete = async (id) => {
-    let token = cookie.load("auth_token");
+    if(currentUser === null){
+      let token = cookie.load("auth_token");
     if (id === undefined) {
       setNotesArray(notesArray.filter((el) => el.Id !== undefined));
     } else {
@@ -264,6 +357,34 @@ function Notes(props) {
         window.alert(result.data.payload.msg);
       }
     }
+    }
+    else{
+      if (id === undefined) {
+        setNotesArray(notesArray.filter((el) => el.Id !== undefined));
+      }
+      else{
+        const Id = {
+          id,
+        };
+        const result = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/sa/deleteNotes`,
+          headers: {
+            Authorization: `Bearer ${currentUser.ya}`,
+            "Content-type": "application/json",
+          },
+          data: Id,
+        });
+        if (result.data.statusCode === 200) {
+          window.alert(result.data.data.msg);
+          setNotesArray(notesArray.filter((el) => el.Id !== id));
+        } else {
+          window.alert(result.data.data.msg);
+        }
+      
+      }
+    }
+    
   };
 
   return (
@@ -375,7 +496,10 @@ function Notes(props) {
                         <MenuItem
                           key={index}
                           className="allNotes"
-                          onClick={() => setIndex(index)}
+                          onClick={() => {
+                            setIndex(index)
+                            setTitle(notesArray[index].Title)
+                          }}
                         >
                           {" "}
                           <p>&nbsp;{value.Title}</p>
@@ -398,18 +522,30 @@ function Notes(props) {
           </Grid>
           <Grid item sm={7} md={7} xs={12} className="notes-grid">
             <>
+            {change && <span style={{color:"red"}}>Press Enter to save  Title *</span>}
+
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
                 <TextField
                   label="Title"
                   id="outlined-size-small"
                   value={
-                    notesArray[index] === undefined
-                      ? notesArray[0].Title
-                      : notesArray[index].Title
+                    title
                   }
                   variant="outlined"
                   size="small"
-                  disabled
+                  onChange={(e)=>{
+                    setTitle(e.target.value);
+                    setChange(true);
+                  }}
+                  onKeyDown={(e)=>{
+                    if(e.key === "Enter"){
+                      let notesArrayClone = [...notesArray];
+                      notesArrayClone[index] = {...notesArrayClone[index], Title : e.target.value}
+                      setNotesArray(notesArrayClone);
+                      setChange(false);
+
+                    }
+                  }}
                   className="notes-field"
                 />
                 <Button

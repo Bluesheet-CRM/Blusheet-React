@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { AgGridReact, AgGridColumn } from "ag-grid-react";
 import "ag-grid-community/dist/styles/ag-grid.css";
 import "ag-grid-community/dist/styles/ag-theme-alpine.css";
@@ -7,7 +7,8 @@ import "./TableView.css";
 import Loader from "react-loaders";
 import "react-datepicker/dist/react-datepicker.css";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
-import cookie from 'react-cookies'
+import { AuthContext } from "../../contexts/AuthContext";
+import cookie from "react-cookies";
 //material UI
 import {
   ClickAwayListener,
@@ -38,26 +39,49 @@ export default function TableView() {
   const [selected, setSelected] = useState(false);
   const [fields, setFields] = useState({});
   const [fields1, setFields1] = useState({});
-  const [filteredValue,setFilteredValue] = useState([]);
+  const [filteredValue, setFilteredValue] = useState([]);
   const [delId, setDelId] = useState("");
   const [add, setAdd] = useState(false);
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef(null);
   const [upload, setUpload] = useState(false);
 
+  const {
+    opportunityData,
+    setOpportunityData,
+    opportunitySkeleton,
+  } = useContext(OpportunityContext);
+  const { loadingAuth, currentUser, setAuth, auth } = useContext(AuthContext);
 
-
-  const {opportunityData,setOpportunityData} = useContext(OpportunityContext);
+  async function fetchOpportunityData(){
+    axios({
+      method: "get",
+      url: `${process.env.REACT_APP_BACKEND_URL}/pipelines`,
+      headers: {
+        Authorization: `Bearer ${currentUser.ya}`,
+        "Content-type": "application/json",
+      },
+    })
+    .then((result)=>{
+        window.alert(result.data.data.msg);
+        setOpportunityData(result.data.data.opportunities);
+        setEditValue([]);
+        setLoad(true);
+    })
+    .catch((err)=>{
+      window.alert(err.message);
+    })
+  }
 
   async function fetchData() {
-    let token = cookie.load('auth_token');
+    let token = cookie.load("auth_token");
     const payload = {
       token: token,
-  }
+    };
     const result = await axios({
       method: "post",
       url: `${process.env.REACT_APP_BACKEND_URL}/allOpportunities`,
-      data:payload
+      data: payload,
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -65,16 +89,16 @@ export default function TableView() {
         id.push(value.Id);
         return null;
       });
-      const payload1={
+      const payload1 = {
         token: token,
-        id:id
-      }
+        id: id,
+      };
 
       const data = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleRecords`,
         data: payload1,
-      })
+      });
       if (data.data.statusCode === 200) {
         setOpportunityData(data.data.payload.data);
         setFilteredValue(data.data.payload.data);
@@ -97,8 +121,6 @@ export default function TableView() {
     }
   }
 
-
-
   useEffect(() => {
     setLoading(true);
     // fetchData();
@@ -115,7 +137,6 @@ export default function TableView() {
     setLoad(true);
     setLoading(false);
   }, []);
-
 
   const [checked, setChecked] = React.useState(true);
 
@@ -141,12 +162,12 @@ export default function TableView() {
       newArray.map((value, index) => {
         if (value.Id === e.data.Id) {
           value[field] = e.newValue;
-;
           present = true;
         }
         return null;
       });
       setEditValue(newArray);
+      console.log(editValue,newArray);
     }
 
     if (present === false) {
@@ -157,80 +178,126 @@ export default function TableView() {
       array.push(data);
 
       setEditValue(array);
+      console.log(editValue,array);
     }
 
     setSave(true);
   };
   const handleSave = async () => {
-    let token = cookie.load('auth_token');
-    //add logic for adding new row
-    if (editValue[0].Id === null) {
-      const data = {};
-      Object.entries(editValue[0]).map((item) => {
-        if (item[1] !== null) {
-          data[item[0]] = item[1];
-        }
-        return null;
-      });
-      data.CloseDate = new Date(data.CloseDate);
-      const payload = {
-          token: token,
-          data: data
-      }
-
-      const result = await axios({
-        method: "post",
-        url: `${process.env.REACT_APP_BACKEND_URL}/addOpportunity`,
-        data: payload,
-      });
-      if (result.data.statusCode === 200) {
-        let resultArray = [];
-        resultArray = result.data.payload.data;
-        if (resultArray.success !== true) {
-          window.alert(resultArray.errors[0].message);
-          setEditValue([]);
+    if (currentUser !== null) {
+      if (opportunityData.length === 1) {
+        const result = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/sa/addOpportunity`,
+          data: opportunityData,
+          headers: {
+            Authorization: `Bearer ${currentUser.ya}`,
+            "Content-type": "application/json",
+          },
+        });
+        if (result.statusCode === 200) {
+          window.alert(result.data.data.msg);
           setSave(false);
           setLoad(false);
-          fetchData();
+          setEditValue([]);
+          fetchOpportunityData();
+        } else {
+          window.alert(result.data.data.msg);
+          setEditValue([{}]);
         }
-        setEditValue([]);
-        setSave(false);
-        setLoad(false);
-        setLoading(true);
-        fetchData();
       } else {
-        window.alert(result.data.payload.data);
+        const result = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/sa/addOpportunity`,
+          data: editValue,
+          headers: {
+            Authorization: `Bearer ${currentUser.ya}`,
+            "Content-type": "application/json",
+          },
+        });
+        if (result.data.statusCode === 200) {
+          window.alert(result.data.data.msg);
+          setSave(false);
+          fetchOpportunityData();
+          setEditValue([]);
+          setLoad(false);
+        } else {
+          window.alert(result.data.data.msg);
+          let newArray = [];
+          setEditValue([]);
+        }
       }
     } else {
-      const payload = {
-        token: token,
-        editValue: editValue
-    }
-      const result = await axios({
-        method: "post",
-        url: `${process.env.REACT_APP_BACKEND_URL}/updateMultiple`,
-        data: payload,
-      });
-      if (result.data.statusCode === 200) {
-        let resultArray = [];
-        resultArray = result.data.payload.data;
-        resultArray.map((value, index) => {
-          if (value.success !== true) {
-            window.alert(value.errors[0].message);
+      let token = cookie.load("auth_token");
+      //add logic for adding new row
+      if (editValue[0].Id === null) {
+        const data = {};
+        Object.entries(editValue[0]).map((item) => {
+          if (item[1] !== null) {
+            data[item[0]] = item[1];
+          }
+          return null;
+        });
+        data.CloseDate = new Date(data.CloseDate);
+        const payload = {
+          token: token,
+          data: data,
+        };
+
+        const result = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/addOpportunity`,
+          data: payload,
+        });
+        if (result.data.statusCode === 200) {
+          let resultArray = [];
+          resultArray = result.data.payload.data;
+          if (resultArray.success !== true) {
+            window.alert(resultArray.errors[0].message);
             setEditValue([]);
             setSave(false);
             setLoad(false);
             fetchData();
           }
-          return null;
-        });
-        setEditValue([]);
-        setSave(false);
-        setLoad(false);
-        setLoading(true);
-        fetchData();
+          setEditValue([]);
+          setSave(false);
+          setLoad(false);
+          setLoading(true);
+          fetchData();
+        } else {
+          window.alert(result.data.payload.data);
+        }
       } else {
-        window.alert(result.data.payload.msg);
+        const payload = {
+          token: token,
+          editValue: editValue,
+        };
+        const result = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/updateMultiple`,
+          data: payload,
+        });
+        if (result.data.statusCode === 200) {
+          let resultArray = [];
+          resultArray = result.data.payload.data;
+          resultArray.map((value, index) => {
+            if (value.success !== true) {
+              window.alert(value.errors[0].message);
+              setEditValue([]);
+              setSave(false);
+              setLoad(false);
+              fetchData();
+            }
+            return null;
+          });
+          setEditValue([]);
+          setSave(false);
+          setLoad(false);
+          setLoading(true);
+          fetchData();
+        } else {
+          window.alert(result.data.payload.msg);
+        }
       }
     }
   };
@@ -274,26 +341,50 @@ export default function TableView() {
   }, [open]);
 
   const handleDelete = async () => {
-
-    let token = cookie.load('auth_token');
-
-    if (delId === null) {
-      setOpportunityData(opportunityData.filter((el) => el.Id !== null));
-    } else {
-      const payload = {
-        token: token,
-    }
-      const result = await axios({
-        method: "post",
-        url: `${process.env.REACT_APP_BACKEND_URL}/delete/${delId}`,
-        data: payload
-      });
-      if (result.data.statusCode === 200) {
-        window.alert("Deleted Successfully");
-        setDelId("");
-        setOpportunityData(opportunityData.filter((el) => el.Id !== delId));
+    if (currentUser !== null) {
+      if (delId === null) {
+        setOpportunityData(opportunityData.filter((el) => el.Id !== null));
       } else {
-        window.alert(result.data.payload.msg);
+        const Id = {
+          delId,
+        };
+        const result = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/sa/deleteOpportunity`,
+          headers: {
+            Authorization: `Bearer ${currentUser.ya}`,
+            "Content-type": "application/json",
+          },
+          data: Id,
+        });
+        if (result.data.statusCode === 200) {
+          window.alert(result.data.data.msg);
+          setOpportunityData(opportunityData.filter((el) => el.Id !== delId));
+        } else {
+          window.alert(result.data.data.msg);
+        }
+      }
+    } else {
+      let token = cookie.load("auth_token");
+
+      if (delId === null) {
+        setOpportunityData(opportunityData.filter((el) => el.Id !== null));
+      } else {
+        const payload = {
+          token: token,
+        };
+        const result = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/delete/${delId}`,
+          data: payload,
+        });
+        if (result.data.statusCode === 200) {
+          window.alert("Deleted Successfully");
+          setDelId("");
+          setOpportunityData(opportunityData.filter((el) => el.Id !== delId));
+        } else {
+          window.alert(result.data.payload.msg);
+        }
       }
     }
   };
@@ -301,16 +392,13 @@ export default function TableView() {
   return (
     <div
       style={{
-        marginTop:"3rem",
+        marginTop: "3rem",
         height: "auto",
-        width:"100%"
+        width: "100%",
       }}
-    >   
+    >
       {load && (
-        <div
-          id="myGrid"
-          className="ag-theme-alpine"
-        >
+        <div id="myGrid" className="ag-theme-alpine">
           {save && (
             <Button
               onClick={handleSave}
@@ -467,7 +555,7 @@ export default function TableView() {
               checkboxSelection={true}
             ></AgGridColumn>
 
-            {Object.entries(fields1).map((item,index) => {
+            {Object.entries(fields1).map((item, index) => {
               if (item[1] === true) {
                 if (!item[0].includes("Id")) {
                   if (!item[0].includes("Date")) {
@@ -501,6 +589,7 @@ export default function TableView() {
                         style={{ height: "200px" }}
                         editable={true}
                         field={item[0]}
+                        hide={true}
                       ></AgGridColumn>
                     );
                   } else {
@@ -529,7 +618,7 @@ export default function TableView() {
       {loading && loader}
       <br />
       <br />
-{/* 
+      {/* 
       <Chart
         options={chart.options}
         series={chart.series}

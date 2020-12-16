@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import LinkIcon from "@material-ui/icons/Link";
 import axios from "axios";
 import {
@@ -16,14 +16,16 @@ import {
   Paper,
   Popper,
   Container,
-  Backdrop
+  Backdrop,
 } from "@material-ui/core";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
 import "../Notes/Notes.css";
 import DeleteRoundedIcon from "@material-ui/icons/DeleteRounded";
 import LaunchRoundedIcon from "@material-ui/icons/LaunchRounded";
 import { OpportunityContext } from "../../contexts/OpportunityContext";
-import cookie from 'react-cookies';
+import { AuthContext } from "../../contexts/AuthContext";
+import {useNavigate} from "react-router-dom";
+import cookie from "react-cookies";
 import "./Tasks.css";
 const useStylesFacebook = makeStyles((theme) => ({
   root: {
@@ -45,13 +47,13 @@ const useStylesFacebook = makeStyles((theme) => ({
   },
   backdrop: {
     zIndex: theme.zIndex.drawer + 1,
-    color: '#fff',
-  }
+    color: "#fff",
+  },
 }));
 
 function Notes(props) {
   const classes = useStylesFacebook();
-  const [notesArray, setNotesArray] = useState([]);
+  const [tasksArray, setTasksArray] = useState([]);
   const [loading1, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [index, setIndex] = useState(0);
@@ -63,9 +65,12 @@ function Notes(props) {
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
   const oppRef = React.useRef(null);
-  const [loading2,setLoading2] = useState(false);
-  const {opportunitySkeleton,salesforceUser,opportunityData} = useContext(OpportunityContext);
-
+  const [loading2, setLoading2] = useState(false);
+  let navigate = useNavigate();
+  const { opportunitySkeleton, salesforceUser, opportunityData } = useContext(
+    OpportunityContext
+  );
+  const { loadingAuth, currentUser, setAuth, auth } = useContext(AuthContext);
 
   const handleToggle1 = () => {
     setOpen1((prevOpen) => !prevOpen);
@@ -75,21 +80,21 @@ function Notes(props) {
     if (oppRef.current && oppRef.current.contains(event.target)) {
       return;
     }
-    setSelected(opportunity[index].Id);
+    setSelected(opportunityData[index].Id);
     setOpen1(false);
   };
 
   async function fetchData() {
     setLoading2(true);
-    let token = cookie.load('auth_token');
+    let token = cookie.load("auth_token");
     const payload = {
       token: token,
-    }
+    };
     setLoading(true);
     const result = await axios({
       method: "post",
       url: `${process.env.REACT_APP_BACKEND_URL}/allTasks`,
-      data: payload
+      data: payload,
     });
     if (result.data.statusCode === 200) {
       const id = [];
@@ -98,18 +103,17 @@ function Notes(props) {
         return null;
       });
 
-
       const payload1 = {
         token: token,
-        id:id
-      }
+        id: id,
+      };
       const data = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/getMultipleTasks`,
         data: payload1,
       });
       if (data.data.statusCode === 200) {
-        setNotesArray(data.data.payload.data);
+        setTasksArray(data.data.payload.data);
         setLoading(false);
         setLoading2(false);
         setLoad(true);
@@ -144,29 +148,71 @@ function Notes(props) {
         setLoading(false);
         setLoading2(false);
       }
-      
+
       setLoading(false);
       setLoading2(false);
       window.alert(result.data.payload.msg);
     }
   }
+  async function fetchTasksData() {
+    setLoading(true);
+    setLoading2(true);
+
+    const result = await axios({
+      method: "get",
+      url: `${process.env.REACT_APP_BACKEND_URL}/sa/tasks`,
+      headers: {
+        Authorization: `Bearer ${currentUser.ya}`,
+        "Content-type": "application/json",
+      },
+    });
+    if (result.data.statusCode === 200) {
+      if (result.data.data.msg === "No data found!") {
+        window.alert("Your tasks data seems to empty, add one!");
+        setLoading(false);
+        setLoading2(false);
+        setLoad(true);
+      } else {
+        setTasksArray(result.data.data.tasks);
+        setLoading(false);
+        setLoading2(false);
+        setLoad(true);
+      }
+    } else {
+      window.alert(result.data.msg);
+      setLoading(false);
+      setLoading2(false);
+      setLoad(true);
+    }
+  }
 
   useEffect(() => {
-    let token = cookie.load('auth_token');
-    if(token === null | token === undefined){
-        window.location.href="/";
+    if (loadingAuth && currentUser === null) {
+      let token = cookie.load("auth_token");
+      if ((token === null) | (token === undefined)) {
+        window.location.href = "/";
+      } else {
+        fetchData();
+        setOpportunity(opportunityData);
+      }
+    } else {
+      if(loadingAuth){
+        if(currentUser !== null){
+          fetchTasksData();
+        }
+        else{
+          navigate("/");
+        }
+  
+      }
     }
-    else{
-      fetchData();;
-      setOpportunity(opportunityData);
-    }
-   
-    onbeforeunload = e => "Changes made will not be saved";
-  }, []);
+
+    onbeforeunload = (e) => "Changes made will not be saved";
+  }, [loadingAuth]);
 
   const handleSave = async () => {
-
-    let token = cookie.load('auth_token');
+    if(currentUser === null){
+    let token = cookie.load("auth_token");
 
     const data = {
       Subject: sub,
@@ -177,8 +223,8 @@ function Notes(props) {
     };
     const payload = {
       token: token,
-      data: data
-    }
+      data: data,
+    };
 
     const result = await axios({
       method: "post",
@@ -196,41 +242,105 @@ function Notes(props) {
     } else {
       window.alert(result.data.payload.msg);
     }
+  }
+  else{
+    const payload = {
+      Subject: sub,
+      Description: desc,
+      Status: status,
+      ActivityDate: new Date(date),
+      WhatId: selected,
+    };
+    const result = await axios({
+      method: "post",
+      url: `${process.env.REACT_APP_BACKEND_URL}/sa/addTasks`,
+      data: payload,
+      headers: {
+        Authorization: `Bearer ${currentUser.ya}`,
+        "Content-type": "application/json",
+      },
+    });
+    if (result.data.statusCode === 200) {
+      window.alert(result.data.data.msg);
+      setSub("");
+      setDesc("");
+      setDate("");
+      setStatus("");
+      fetchTasksData();
+  }
+  else{
+    window.alert(result.data.data.msg);
+  }
+  }
   };
 
   const handleDelete = async (id) => {
-    let token = cookie.load('auth_token');
+    if(currentUser === null){
+      let token = cookie.load("auth_token");
 
     if (id === undefined) {
-      setNotesArray(notesArray.filter((el) => el.Id !== undefined));
+      setTasksArray(tasksArray.filter((el) => el.Id !== undefined));
     } else {
       const payload = {
         token: token,
-      }
+      };
       const result = await axios({
         method: "post",
         url: `${process.env.REACT_APP_BACKEND_URL}/deleteTasks/${id}`,
-        data:payload
+        data: payload,
       });
       if (result.data.statusCode === 200) {
         window.alert("Deleted Successfully");
-        setNotesArray(notesArray.filter((el) => el.Id !== id));
+        setTasksArray(tasksArray.filter((el) => el.Id !== id));
       } else {
         window.alert(result.data.payload.msg);
       }
     }
+    }
+    else{
+      window.alert(id);
+      if (id === undefined) {
+        setTasksArray(tasksArray.filter((el) => el.id !== undefined));
+      }
+       else{
+        const Id = {
+          id,
+        };
+        const result = await axios({
+          method: "post",
+          url: `${process.env.REACT_APP_BACKEND_URL}/sa/deleteTasks`,
+          headers: {
+            Authorization: `Bearer ${currentUser.ya}`,
+            "Content-type": "application/json",
+          },
+          data: Id,
+        });
+        if (result.data.statusCode === 200) {
+          window.alert(result.data.data.msg);
+          setTasksArray(tasksArray.filter((el) => el.Id !== id));
+        } else {
+          window.alert(result.data.data.msg);
+        }
+      
+      }
+    }
+    
   };
 
   return (
-    <div
-      className="task-container"
-    >
-             {loading2 && <Backdrop className={classes.backdrop}  open={loading1} onClick={()=>setLoading2(false)}>
-        <CircularProgress color="inherit" />
-      </Backdrop>}
+    <div className="task-container">
+      {loading2 && (
+        <Backdrop
+          className={classes.backdrop}
+          open={loading1}
+          onClick={() => setLoading2(false)}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
       <Container maxWidth={false}>
         {/* <Grid container> */}
-          {/* <Grid item xl={3} md={3}>
+        {/* <Grid item xl={3} md={3}>
             <Statistics />
           </Grid>
           <Grid item xl={3} md={3}>
@@ -255,7 +365,7 @@ function Notes(props) {
           Add Task
         </Button>
       </Box> */}
-      {/* <Box mt={3}>
+        {/* <Box mt={3}>
         <Card>
           <CardContent>
             <Box maxWidth={500}>
@@ -280,203 +390,202 @@ function Notes(props) {
           </CardContent>
         </Card>
       </Box> */}
-        {/* {load && <TaskTable data={notesArray} />} */}
+        {/* {load && <TaskTable data={tasksArray} />} */}
         {load && (
-        <Grid container justify="space-evenly">
-          <Grid item sm={4} md={4} xs={12}>
-            <Card
-             className="tasks-title"
-              variant="outlined"
-            >
-              <CardContent style={{ padding: "1rem" }}>
-                <h3>All your Tasks</h3>
-                <br />
-                <hr />
-                {loading1 && (
-                  <div className={classes.root}>
-                    <CircularProgress
-                      variant="determinate"
-                      className={classes.bottom}
-                      size={40}
-                      thickness={4}
-                      {...props}
-                      value={100}
-                    />
-                    <CircularProgress
-                      variant="indeterminate"
-                      disableShrink
-                      className={classes.top}
-                      classes={{
-                        circle: classes.circle,
-                      }}
-                      size={40}
-                      thickness={4}
-                      {...props}
-                    />
-                  </div>
-                )}
-                
-                <MenuList>
-                  {load &&
-                    notesArray.map((value, index) => {
-                      return (
-                        <MenuItem
-                          key={index}
-                          className="allNotes"
-                          onClick={() => setIndex(index)}
-                        >
-                          {" "}
-                          <p>&nbsp;{value.Subject}</p>
-                          <p className="note-icons">
-                            <LaunchRoundedIcon
-                              onClick={() => setIndex(index)}
-                            />{" "}
-                            <DeleteRoundedIcon
-                              onClick={() => {
-                                handleDelete(value.Id);
-                              }}
-                            />
-                          </p>{" "}
-                        </MenuItem>
-                      );
-                    })}
-                </MenuList>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item sm={5} md={5} xs={12}>
-            <>
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginRight: "3rem",
-                }}
-              >
-                <Button
-                  style={{ marginBottom: "1rem" }}
-                  variant="contained"
-                  color="primary"
-                >
-                  Add &nbsp;
-                  <NoteAddIcon style={{ height: "20px", width: "20px" }} />
-                </Button>
-
-                <Button
-                  style={{ marginBottom: "1rem" }}
-                  aria-haspopup="true"
-                  variant="contained"
-                  color="secondary"
-                  ref={oppRef}
-                  aria-controls={open1 ? "menu-list-grow" : undefined}
-                  onClick={handleToggle1}
-                >
-                  <LinkIcon style={{ height: "20px", width: "20px" }} />
-                  &nbsp; Link to Opportunity
-                </Button>
-                <Popper
-                  open={open1}
-                  anchorEl={oppRef.current}
-                  role={undefined}
-                  transition
-                  disablePortal
-                  style={{
-                    zIndex: 2,
-                    marginLeft: "3rem",
-                    maxHeight: "40vh",
-                    overflowY: "auto",
-                    maxwidth: "30vw",
-                    wordWrap: "break-word",
-                  }}
-                >
-                  {({ TransitionProps, placement }) => (
-                    <Grow
-                      {...TransitionProps}
-                      style={{
-                        transformOrigin:
-                          placement === "bottom"
-                            ? "center top"
-                            : "center bottom",
-                      }}
-                    >
-                      <Paper>
-                        <ClickAwayListener onClickAway={() => setOpen1(false)}>
-                          <MenuList autoFocusItem={open1} id="menu-list-grow">
-                            {opportunity.map((value, index) => {
-                              return (
-                                <MenuItem
-                                  key={index}
-                                  onClick={(e) => handleClose1(e, index)}
-                                >
-                                  {value.Name}
-                                </MenuItem>
-                              );
-                            })}
-                          </MenuList>
-                        </ClickAwayListener>
-                      </Paper>
-                    </Grow>
+          <Grid container justify="space-evenly">
+            <Grid item sm={4} md={4} xs={12}>
+              <Card className="tasks-title" variant="outlined">
+                <CardContent style={{ padding: "1rem" }}>
+                  <h3>All your Tasks</h3>
+                  <br />
+                  <hr />
+                  {loading1 && (
+                    <div className={classes.root}>
+                      <CircularProgress
+                        variant="determinate"
+                        className={classes.bottom}
+                        size={40}
+                        thickness={4}
+                        {...props}
+                        value={100}
+                      />
+                      <CircularProgress
+                        variant="indeterminate"
+                        disableShrink
+                        className={classes.top}
+                        classes={{
+                          circle: classes.circle,
+                        }}
+                        size={40}
+                        thickness={4}
+                        {...props}
+                      />
+                    </div>
                   )}
-                </Popper>
-              </div>
-              <Card variant="outlined">
-                <CardContent>
-                  <TextField
-                    id="outlined-basic"
-                    label="Subject"
-                    variant="outlined"
-                    fullWidth
-                    value={sub}
-                    onChange={(e) => setSub(e.target.value)}
-                  />
-                  <br />
-                  <br />
-                  <TextField
-                    id="outlined-basic1"
-                    label="Description"
-                    variant="outlined"
-                    fullWidth
-                    value={desc}
-                    onChange={(e) => setDesc(e.target.value)}
-                  />
-                  <br />
-                  <br />
-                  <TextField
-                    id="outlined-basic2"
-                    label="Status"
-                    variant="outlined"
-                    fullWidth
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                  />
-                  <br />
-                  <br />
-                  <TextField
-                    id="outlined-basic3"
-                    label="Activity Date"
-                    variant="outlined"
-                    fullWidth
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
-                  <br />
-                  <br />
-                  <Button
-                    style={{ marginBottom: "1rem", marginRight: "1rem" }}
-                    aria-haspopup="true"
-                    variant="contained"
-                    color="primary"
-                    onClick={handleSave}
-                  >
-                    Save &nbsp;
-                  </Button>
+
+                  <MenuList>
+                    {load &&
+                      tasksArray.length > 0 &&
+                      tasksArray.map((value, index) => {
+                        return (
+                          <MenuItem
+                            key={index}
+                            className="allNotes"
+                            onClick={() => setIndex(index)}
+                          >
+                            {" "}
+                            <p>&nbsp;{value.Subject}</p>
+                            <p className="note-icons">
+                              <LaunchRoundedIcon
+                                onClick={() => setIndex(index)}
+                              />{" "}
+                              <DeleteRoundedIcon
+                                onClick={() => {
+                                  handleDelete(value.Id);
+                                }}
+                              />
+                            </p>{" "}
+                          </MenuItem>
+                        );
+                      })}
+                  </MenuList>
                 </CardContent>
               </Card>
-            </>
+            </Grid>
+            <Grid item sm={5} md={5} xs={12}>
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginRight: "3rem",
+                  }}
+                >
+                  {/* <Button
+                    style={{ marginBottom: "1rem" }}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Add &nbsp;
+                    <NoteAddIcon style={{ height: "20px", width: "20px" }} />
+                  </Button> */}
+
+                  <Button
+                    style={{ marginBottom: "1rem" }}
+                    aria-haspopup="true"
+                    variant="contained"
+                    color="secondary"
+                    ref={oppRef}
+                    aria-controls={open1 ? "menu-list-grow" : undefined}
+                    onClick={handleToggle1}
+                  >
+                    <LinkIcon style={{ height: "20px", width: "20px" }} />
+                    &nbsp; Link to Opportunity
+                  </Button>
+                  <Popper
+                    open={open1}
+                    anchorEl={oppRef.current}
+                    role={undefined}
+                    transition
+                    disablePortal
+                    style={{
+                      zIndex: 2,
+                      marginLeft: "3rem",
+                      maxHeight: "40vh",
+                      overflowY: "auto",
+                      maxwidth: "30vw",
+                      wordWrap: "break-word",
+                    }}
+                  >
+                    {({ TransitionProps, placement }) => (
+                      <Grow
+                        {...TransitionProps}
+                        style={{
+                          transformOrigin:
+                            placement === "bottom"
+                              ? "center top"
+                              : "center bottom",
+                        }}
+                      >
+                        <Paper>
+                          <ClickAwayListener
+                            onClickAway={() => setOpen1(false)}
+                          >
+                            <MenuList autoFocusItem={open1} id="menu-list-grow">
+                              {opportunityData.map((value, index) => {
+                                return (
+                                  <MenuItem
+                                    key={index}
+                                    onClick={(e) => handleClose1(e, index)}
+                                  >
+                                    {value.Name}
+                                  </MenuItem>
+                                );
+                              })}
+                            </MenuList>
+                          </ClickAwayListener>
+                        </Paper>
+                      </Grow>
+                    )}
+                  </Popper>
+                </div>
+                <Card variant="outlined">
+                  <CardContent>
+                    <TextField
+                      id="outlined-basic"
+                      label="Subject"
+                      variant="outlined"
+                      fullWidth
+                      value={sub}
+                      onChange={(e) => setSub(e.target.value)}
+                    />
+                    <br />
+                    <br />
+                    <TextField
+                      id="outlined-basic1"
+                      label="Description"
+                      variant="outlined"
+                      fullWidth
+                      value={desc}
+                      onChange={(e) => setDesc(e.target.value)}
+                    />
+                    <br />
+                    <br />
+                    <TextField
+                      id="outlined-basic2"
+                      label="Status"
+                      variant="outlined"
+                      fullWidth
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                    />
+                    <br />
+                    <br />
+                    <TextField
+                      id="outlined-basic3"
+                      label="Activity Date"
+                      variant="outlined"
+                      fullWidth
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
+                    <br />
+                    <br />
+                    <Button
+                      style={{ marginBottom: "1rem", marginRight: "1rem" }}
+                      aria-haspopup="true"
+                      variant="contained"
+                      color="primary"
+                      onClick={handleSave}
+                    >
+                      Save &nbsp;
+                    </Button>
+                  </CardContent>
+                </Card>
+              </>
+            </Grid>
           </Grid>
-        </Grid> 
-         )}
+        )}
       </Container>
     </div>
   );

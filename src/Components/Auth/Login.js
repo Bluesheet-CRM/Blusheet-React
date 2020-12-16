@@ -32,6 +32,47 @@ function Login() {
 				setError(e.message);
 				setIsLoading(false);
 			});
+  };
+  
+  const handleGoogleSignIn = () => {
+		setError("");
+		setIsLoading(true);
+		const provider = new app.auth.GoogleAuthProvider();
+		app.auth()
+			.signInWithPopup(provider)
+			.then(result => {
+				if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
+					result.user.getIdToken().then(token => {
+						fetch(`${process.env.REACT_APP_URL}/user`, {
+							method: "post",
+							headers: {
+								Authorization: `Bearer ${token}`,
+								"Content-type": "application/json",
+							},
+							body: JSON.stringify({
+								fullName: result.user.displayName,
+							}),
+						})
+							.then(response => response.json())
+							.then(data => {
+								if (data.statusCode === 200) {
+									window.location.href = "/home";
+								} else {
+                  setError(data.data.msg);
+                  window.alert(data.data.msg);
+									setIsLoading(false);
+								}
+							});
+					});
+				} else {
+					window.location.href = "/home";
+				}
+			})
+			.catch(e => {
+        setError(e.message);
+        window.alert(e.message);
+				setIsLoading(false);
+			});
 	};
 
   return (
@@ -86,6 +127,7 @@ function Login() {
               <Button
                 variant="contained"
                 style={{ width: "95%", height: "3rem" }}
+                onClick={handleGoogleSignIn}
               >
                 Sign in with Google &nbsp;
                 <img
