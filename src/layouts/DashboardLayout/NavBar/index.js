@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
-
+import cookie from "react-cookies";
 
 import {
   Avatar,
@@ -84,6 +84,7 @@ const NavBar = ({ onMobileClose, openMobile,setMobileNavOpen }) => {
 
   const handleLogout = async()=>{
     await base.app().auth().signOut();
+    cookie.remove("auth_token", {path:"/"})
 		window.location.href = "/";
   }
 

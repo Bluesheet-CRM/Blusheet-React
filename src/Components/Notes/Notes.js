@@ -622,7 +622,7 @@ function Notes(props) {
                 data={`<p>${
                   notesArray[index] !== undefined
                     ? notesArray[index].Body
-                    : notesArray[0].Body
+                    : notesArray.length > 1 ? notesArray[0].Body : "No notes yet"
                 }</p>`}
                 onChange={(event, editor) => {
                   const data = editor.getData();
