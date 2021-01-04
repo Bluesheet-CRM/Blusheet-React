@@ -13,7 +13,7 @@ function Home() {
   useEffect(()=>{
     if(loadingAuth && currentUser === null){
       let token = cookie.load('auth_token');
-      if(token){
+      if(token !== null && token !== undefined){
           window.location.href="/home";
       }
     }

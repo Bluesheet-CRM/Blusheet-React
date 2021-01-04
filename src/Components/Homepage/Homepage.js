@@ -133,6 +133,9 @@ function Homepage() {
               fetchData();
             } else {
               window.alert(data.data.payload.msg);
+              cookie.remove("auth_token", { path: "/" });
+              window.location.href="/";
+              
               setLoading1(false);
             }
           } else {
